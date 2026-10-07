@@ -3,402 +3,1371 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Where Your Data Goes</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Manrope:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<title>How a page view becomes a price</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
-/* Dark "instrument panel" — cyan is reserved exclusively for third-party data. */
+/* ============================================================
+   TOKENS — newspaper palette
+   ============================================================ */
 :root{
-  --bg:#0d0a08;                        /* warm near-black, hint of brown */
-  --panel:#17120d;                     /* warm dark panel */
-  --panel-2:#1f1810;                   /* elevated card */
-  --ink:#f4ede0;                       /* warm off-white text */
-  --muted:#9c907c;                     /* warm muted */
-  --line:#2e2419;                      /* warm border */
-  --line-2:#453624;                    /* warm border, brighter */
-  --flow:#ffb347;                      /* amber = third-party data */
-  --flow-dim:rgba(255,179,71,.15);
-  --person:#7ba7ff;                    /* cool blue = you / first party */
-  --ok:#7bd88f;
-  --warn:#ff7a5c;                      /* coral = bidders / auctions */
-  --bad:#ff4f8b;                       /* magenta = fingerprint / broker */
-  --display:"Unbounded",ui-sans-serif,system-ui,sans-serif;
-  --body:"Manrope",ui-sans-serif,system-ui,sans-serif;
+  --paper:#fbfaf6;
+  --paper-2:#f3f1ea;
+  --ink:#141414;
+  --ink-2:#3a3a3a;
+  --muted:#6b6b6b;
+  --muted-2:#8a8a8a;
+  --rule:#d8d5cc;
+  --rule-2:#a8a49a;
+  --rule-ink:#141414;
+
+  --navy:#1e3a8a;
+  --navy-soft:rgba(30,58,138,.10);
+  --rust:#b45309;
+  --rust-soft:rgba(180,83,9,.10);
+  --slate:#1f2937;
+  --crimson:#7f1d1d;
+
+  --ok:#166534;
+  --warn:#9a3412;
+
+  --serif:"Source Serif 4","Georgia","Times New Roman",Times,serif;
+  --body:"Georgia","Times New Roman",Times,serif;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
-  color-scheme:dark; box-sizing:border-box;
+
+  color-scheme:light; box-sizing:border-box;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
-  bbackground-image:radial-gradient(1200px 500px at 20% -10%,rgba(255,179,71,.07),transparent 60%),
-                 radial-gradient(900px 400px at 100% 10%,rgba(123,167,255,.05),transparent 60%);;}
-.wrap{max-width:1240px;margin:0 auto;padding-inline:18px;padding-block:18px 90px}
-h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
-h1{font-size:clamp(1.6rem,4.4vw,3rem);font-weight:800;line-height:1.05}
-h2{font-size:clamp(1.15rem,2.4vw,1.7rem);font-weight:800}
-h3{font-size:.92rem;font-weight:700}
-p{margin:0}
-button,input{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
-.mono{font-family:var(--mono)}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px}
 
-/* --- reading progress --- */
-.progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--ink);opacity:.7;z-index:60;pointer-events:none}
+p{margin:0 0 1em}
+a{color:var(--navy);text-decoration:none;border-bottom:1px solid rgba(30,58,138,.3)}
+a:hover{border-bottom-color:var(--navy)}
 
-/* --- typography helpers --- */
-.eyebrow{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.sub{color:var(--muted);max-width:66ch}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:700;margin:0;color:var(--ink);letter-spacing:-.005em}
+h1{font-size:clamp(2.2rem,5.5vw,3.6rem);line-height:1.08;font-weight:900;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3vw,2.1rem);line-height:1.18;font-weight:700}
+h3{font-size:clamp(1.05rem,1.6vw,1.25rem);line-height:1.3;font-weight:700}
+h4{font-size:.95rem;font-weight:700}
 
-/* --- nav --- */
-.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:6px;flex-wrap:wrap;
-  align-items:center;justify-content:space-between;background:rgba(7,9,15,.88);backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--line);margin:0 -18px 22px;padding:10px 18px}
-.nav .links{display:flex;gap:2px;flex-wrap:wrap}
-.nav a{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
-  text-decoration:none;padding:6px 10px;border-radius:6px;transition:color .15s,background .15s}
-.nav a:hover{color:var(--ink);background:var(--panel-2)}
-.nav a[aria-current="true"]{color:var(--ink);background:var(--panel-2)}
-.seg{display:flex;gap:3px;padding:3px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px}
-.seg button{border:0;background:transparent;padding:6px 11px;border-radius:6px;cursor:pointer;
-  font-family:var(--display);font-weight:700;font-size:.7rem;color:var(--muted);letter-spacing:.02em}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
 
-/* --- hero --- */
-.hero{display:grid;gap:14px;margin-bottom:34px}
-.hero .big{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end}
-.stat{display:grid;gap:2px;cursor:pointer;border-radius:8px;padding:6px 10px;margin:-6px -10px;transition:background .15s;background:transparent;border:0;text-align:left}
-.stat:hover{background:var(--panel-2)}
-.stat .v{font-family:var(--mono);font-size:clamp(1.8rem,5vw,3rem);font-weight:700;line-height:1;
-  color:var(--ink);font-variant-numeric:tabular-nums;transition:text-shadow .4s}
-.stat.pulse .v{text-shadow:0 0 20px rgba(238,242,248,.5)}
-.stat .l{font-size:.78rem;color:var(--muted)}
-.stat .l::after{content:" ↓";color:var(--muted)}
+/* ============================================================
+   KICKERS, META, RULES
+   ============================================================ */
+.kicker{
+  font-family:var(--sans);
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.kicker.ink{color:var(--ink)}
+.byline{
+  font-family:var(--sans);
+  font-size:.78rem;
+  color:var(--muted);
+  letter-spacing:.02em;
+}
+.deck{
+  font-family:var(--serif);
+  font-size:clamp(1.05rem,1.6vw,1.28rem);
+  line-height:1.45;
+  color:var(--ink-2);
+  font-weight:400;
+  max-width:64ch;
+}
+.rule{height:1px;background:var(--rule);border:0;margin:0}
+.rule-ink{height:1px;background:var(--ink);border:0;margin:0}
+.rule-double{
+  border:0;height:5px;margin:0;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+}
+.mono{font-family:var(--mono);font-size:.85em}
+.small{font-size:.85rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-/* --- section shell --- */
-section.block{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:20px;
-  margin-bottom:26px;display:grid;gap:16px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
-.head{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
-.head .num{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--muted);line-height:1;letter-spacing:.1em}
-.grid3{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) minmax(0,.9fr);gap:14px;align-items:start}
-@media (max-width:960px){.grid3{grid-template-columns:1fr}}
-.card{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px;min-width:0}
-.card h3{display:flex;justify-content:space-between;align-items:center;gap:8px}
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+.progress{
+  position:fixed;top:0;left:0;height:2px;width:0;background:var(--ink);
+  z-index:60;pointer-events:none;transition:width .05s linear;
+}
 
-/* --- buttons --- */
-.btn{border:1px solid var(--line-2);background:var(--panel);border-radius:6px;padding:8px 13px;cursor:pointer;
-  font-family:var(--display);font-size:.72rem;font-weight:700;letter-spacing:.03em;transition:background .15s,color .15s,border-color .15s}
-.btn:hover{border-color:var(--ink)}
-.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btn.primary:hover{background:#fff}
-.btn:disabled{opacity:.4;cursor:default}
+/* ============================================================
+   MASTHEAD / NAV
+   ============================================================ */
+.masthead{
+  border-bottom:1px solid var(--ink);
+  padding:14px 0 12px;
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-bottom:0;
+}
+.masthead .title{
+  font-family:var(--serif);
+  font-weight:900;
+  font-size:1.15rem;
+  letter-spacing:-.01em;
+  color:var(--ink);
+}
+.masthead .nav{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+}
+.masthead .nav a{
+  font-family:var(--sans);
+  font-size:.78rem;
+  font-weight:500;
+  letter-spacing:.02em;
+  color:var(--ink-2);
+  border:0;
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+}
+.masthead .nav a:hover{color:var(--ink)}
+.masthead .nav a[aria-current="true"]{border-bottom-color:var(--ink);color:var(--ink)}
 
-/* --- toggles --- */
-.tog{display:flex;align-items:center;gap:8px;font-size:.82rem;cursor:pointer;user-select:none}
-.tog input{accent-color:var(--ink);width:16px;height:16px}
+.navbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(251,250,246,.96);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--rule);
+  padding:10px 0;
+  margin-bottom:28px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.navbar .links{display:flex;gap:20px;flex-wrap:wrap}
+.navbar .links a{
+  font-family:var(--sans);
+  font-size:.78rem;
+  font-weight:500;
+  color:var(--ink-2);
+  border:0;
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  letter-spacing:.01em;
+}
+.navbar .links a:hover{color:var(--ink)}
+.navbar .links a[aria-current="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 
-/* --- mock browser --- */
-.browser{border:1px solid var(--line-2);border-radius:8px;overflow:hidden;background:#0a0e16}
-.browser .bar{display:flex;gap:6px;align-items:center;padding:7px 9px;background:var(--panel);border-bottom:1px solid var(--line)}
-.browser .bar i{width:9px;height:9px;border-radius:50%;background:var(--line-2);display:inline-block}
-.browser .url{flex:1;font-family:var(--mono);font-size:.7rem;color:var(--muted);background:var(--panel-2);
-  border-radius:4px;padding:4px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.browser .page{padding:12px;display:grid;gap:8px;cursor:pointer;position:relative;min-height:130px}
-.browser .page:hover{background:#0c121c}
-.ph{background:var(--panel-2);border-radius:4px;height:9px}
-.ph.w1{width:55%}.ph.w2{width:85%}.ph.w3{width:70%}
-.adslot{border:1px dashed var(--line-2);border-radius:4px;height:38px;display:grid;place-items:center;
-  font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.1em;transition:all .4s}
-.adslot.filled{border-style:solid;border-color:var(--flow);color:var(--flow);background:var(--flow-dim)}
-.page .hint{position:absolute;inset:auto 10px 8px auto;font-family:var(--mono);font-size:.6rem;color:var(--muted)}
+.modes{display:flex;gap:0;border:1px solid var(--rule);border-radius:2px;overflow:hidden;background:#fff}
+.modes button{
+  font-family:var(--sans);
+  font-size:.76rem;
+  font-weight:500;
+  letter-spacing:.02em;
+  padding:7px 14px;
+  color:var(--ink-2);
+  border-right:1px solid var(--rule);
+  transition:background .15s,color .15s;
+}
+.modes button:last-child{border-right:0}
+.modes button:hover{background:var(--paper-2)}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 
-/* --- network canvas --- */
-.net{position:relative;background:#070b12;border:1px solid var(--line);border-radius:8px;overflow:hidden;min-height:200px}
-.net canvas{display:block;width:100%;height:100%;cursor:crosshair}
-.net .hud{position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap}
-.hud .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;background:rgba(7,9,15,.75);
-  border:1px solid var(--line);border-radius:5px;padding:4px 8px;color:var(--muted)}
-.hud .k b{color:var(--ink);font-size:.9rem;display:block;font-variant-numeric:tabular-nums}
-.net .tline{position:absolute;right:10px;top:10px;font-family:var(--mono);font-size:.62rem;color:var(--muted);
-  background:rgba(7,9,15,.75);border:1px solid var(--line);border-radius:5px;padding:4px 8px}
-.net .tline b{color:var(--ink);font-variant-numeric:tabular-nums}
-.net .tip,.chart .tip{position:absolute;pointer-events:none;background:rgba(7,9,15,.94);border:1px solid var(--line-2);
-  border-radius:6px;padding:6px 9px;font-family:var(--mono);font-size:.66rem;color:var(--ink);white-space:nowrap;
-  transform:translate(-50%,-130%);z-index:5}
-.net .tip[hidden],.chart .tip[hidden]{display:none}
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{
+  padding:44px 0 28px;
+  border-bottom:1px solid var(--rule);
+  margin-bottom:32px;
+}
+.hero .kicker{margin-bottom:18px;display:block}
+.hero h1{margin-bottom:22px;max-width:19ch}
+.hero .deck{margin-bottom:26px}
+.hero .meta{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--sans);
+  font-size:.78rem;
+  color:var(--muted);
+  letter-spacing:.02em;
+  padding-top:18px;
+  border-top:1px solid var(--rule);
+  margin-top:6px;
+}
+.hero .meta b{color:var(--ink);font-weight:600}
 
-/* --- request log --- */
-.log{display:grid;gap:4px;overflow:auto;padding-right:2px}
-.req{display:grid;grid-template-columns:46px 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);
-  border-radius:6px;padding:7px 9px;background:var(--panel);text-align:left;cursor:pointer;min-width:0;
-  animation:in .3s ease-out;transition:border-color .15s,background .15s}
-@keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.req .t{font-family:var(--mono);font-size:.62rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.req .n{font-size:.8rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.req .n small{display:block;font-weight:500;color:var(--muted);font-size:.7rem;white-space:normal;line-height:1.3}
-.req .c{font-family:var(--mono);font-size:.6rem;padding:2px 6px;border-radius:4px;border:1px solid currentColor}
-.c.fp{color:var(--person)}.c.tp{color:var(--flow)}.c.bid{color:var(--warn)}.c.fpr{color:var(--bad)}
-.req[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.req:hover{border-color:var(--line-2);background:var(--panel-2)}
+.figures{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:0;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+  margin-top:26px;
+}
+.figures .fig{
+  padding:18px 20px;
+  border-right:1px solid var(--rule);
+  text-align:left;
+  background:none;
+  border-radius:0;
+  transition:background .15s;
+}
+.figures .fig:last-child{border-right:0}
+.figures .fig:hover{background:var(--paper-2)}
+.figures .fig .v{
+  font-family:var(--serif);
+  font-size:clamp(1.8rem,3.4vw,2.6rem);
+  font-weight:700;
+  line-height:1;
+  display:block;
+  margin-bottom:6px;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink);
+}
+.figures .fig .l{
+  font-family:var(--sans);
+  font-size:.72rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:500;
+}
+.figures .fig .l::after{content:" →";color:var(--muted-2)}
 
-/* --- payload inspector (FIX: pre-wrap) --- */
-.payload{font-family:var(--mono);font-size:.7rem;background:#05080e;border:1px solid var(--line);
-  border-radius:6px;padding:10px 12px;overflow:auto;line-height:1.55;white-space:pre-wrap;word-break:break-word}
-.payload .k{color:var(--muted)}.payload .v{color:var(--ink)}.payload .hot{color:var(--flow)}
-.payload .pii{color:var(--warn)}.payload .cm{color:var(--muted);font-style:italic}
+@media (max-width:720px){
+  .figures{grid-template-columns:1fr}
+  .figures .fig{border-right:0;border-bottom:1px solid var(--rule)}
+  .figures .fig:last-child{border-bottom:0}
+}
 
-/* --- legend --- */
-.legend{display:flex;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:.62rem;color:var(--muted)}
-.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;
-  vertical-align:-1px;background:var(--x)}
-
-/* --- profile builder --- */
-.sources{display:grid;gap:6px}
-.src{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;border:1px solid var(--line);
-  border-radius:6px;padding:8px 10px;background:var(--panel);cursor:pointer;text-align:left;min-width:0;
-  transition:border-color .15s,background .15s}
-.src[aria-pressed="true"]{border-color:var(--flow);background:var(--flow-dim)}
-.src .ic{width:30px;height:30px;border-radius:6px;background:var(--panel-2);display:grid;place-items:center;color:var(--muted)}
-.src[aria-pressed="true"] .ic{color:var(--flow)}
-.src .ic svg{width:18px;height:18px}
-.src b{font-size:.82rem;display:block}
-.src small{font-size:.7rem;color:var(--muted);font-family:var(--mono)}
-.graph{background:#070b12;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.graph svg{display:block;width:100%;height:auto}
-#gsvg .srcbox{cursor:pointer}
-#gsvg .srcbox:hover rect{stroke-width:2.5}
-#gsvg .ghost rect{stroke:#2f4160;stroke-dasharray:4 4}
-#gsvg .ghost text{opacity:.5}
-.profile{display:grid;gap:8px}
-.profile .row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0;font-size:.82rem}
-.profile .row .lab{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block}
-.profile .row.off{opacity:.35}
-.profile .row.click{cursor:pointer;border-radius:4px;padding-inline:6px;margin-inline:-6px}
-.profile .row.click:hover{background:var(--panel)}
-.profile .row.off .fix{color:var(--ink);font-family:var(--mono);font-size:.62rem;text-decoration:underline}
-.conf{width:72px;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
-.conf i{display:block;height:100%;background:var(--person);transition:width .4s}
-.tag{font-family:var(--mono);font-size:.6rem;padding:2px 6px;border-radius:4px;border:1px solid var(--warn);color:var(--warn);width:max-content}
-.tag.src{border-color:var(--person);color:var(--person)}
-
-/* --- 02 → 03 link indicator --- */
-.linknote{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line-2);
-  border-radius:6px;padding:9px 12px;background:var(--panel);font-size:.8rem;color:var(--muted);
-  opacity:0;transform:translateY(-4px);transition:opacity .35s,transform .35s;pointer-events:none}
-.linknote.on{opacity:1;transform:none;pointer-events:auto}
-.linknote b{color:var(--ink)}
-
-/* --- pricing --- */
-.sliders{display:grid;gap:12px}
-.sl{display:grid;gap:4px}
-.sl label{display:flex;justify-content:space-between;font-size:.8rem}
-.sl label b{font-family:var(--mono);color:var(--ink)}
-.sl input{width:100%;accent-color:var(--ink);cursor:pointer;height:22px}
-.chart{background:#070b12;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative}
-.chart svg{display:block;width:100%;height:auto}
-.out{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.out .o{border:1px solid var(--line);border-radius:6px;padding:10px;display:grid;gap:3px;background:var(--panel)}
-.out .o .v{font-family:var(--mono);font-size:1.5rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
-.out .o .l{font-size:.72rem;color:var(--muted)}
-.out .o.you .v{color:var(--flow)}
-.delta{font-family:var(--mono);font-size:.74rem}
-.delta.up{color:var(--bad)}.delta.down{color:var(--ok)}
-.callout{border-left:3px solid var(--line-2);background:var(--panel);padding:9px 12px;border-radius:0 6px 6px 0;font-size:.84rem;color:var(--muted)}
-.callout.warn{border-color:var(--warn);background:rgba(255,177,59,.08)}
-.presets{display:flex;gap:4px;flex-wrap:wrap}
-.presets button{border:1px solid var(--line-2);background:var(--panel);border-radius:5px;padding:4px 8px;
-  font-family:var(--mono);font-size:.62rem;cursor:pointer;color:var(--muted);transition:color .15s,border-color .15s}
-.presets button:hover{color:var(--ink);border-color:var(--ink)}
-
-/* --- industries --- */
-.ind3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-@media (max-width:960px){.ind3{grid-template-columns:1fr}}
-.pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.6rem;font-weight:700;
-  letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid currentColor;width:max-content}
-.p-verified{color:var(--ok)}.p-alleged{color:var(--warn)}.p-gap{color:var(--bad)}
-.chips{display:flex;flex-wrap:wrap;gap:4px}
-.chip{font-family:var(--mono);font-size:.62rem;padding:3px 7px;border-radius:5px;background:var(--panel);color:var(--muted);border:1px solid var(--line)}
-.ev{display:grid;gap:6px}
-.ev .e{display:grid;gap:4px;border-top:1px solid var(--line);padding-top:8px;font-size:.82rem}
-.ev .e a{color:var(--muted);font-size:.74rem;word-break:break-word}
-.ev .e a:hover{color:var(--ink)}
-.ind3 .card{cursor:pointer;transition:border-color .18s,transform .18s}
-.ind3 .card:hover{border-color:var(--line-2);transform:translateY(-2px)}
-.ind3 .card[data-cur="1"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.ind3 .go{justify-self:start}
-
-/* --- footer --- */
-footer{margin-top:30px;font-size:.76rem;color:var(--muted);display:grid;gap:6px;max-width:80ch}
-footer b{color:var(--ink)}
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+section.block{
+  padding:52px 0;
+  border-bottom:1px solid var(--rule);
+  display:grid;
+  gap:22px;
+}
+section.block:last-of-type{border-bottom:0}
+.section-head{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:28px;
+  align-items:start;
+  margin-bottom:8px;
+}
+.section-head .num{
+  font-family:var(--serif);
+  font-size:2rem;
+  font-weight:400;
+  font-style:italic;
+  color:var(--muted-2);
+  line-height:1;
+  padding-top:6px;
+  font-variant-numeric:tabular-nums;
+}
+.section-head .txt{display:grid;gap:8px;max-width:70ch}
+.section-head .kicker{margin-bottom:2px}
+.section-head h2{margin:4px 0 6px;max-width:22ch}
+.section-head p{color:var(--ink-2);font-size:1rem;line-height:1.55;max-width:62ch;margin:0}
+@media (max-width:640px){
+  .section-head{grid-template-columns:1fr;gap:6px}
+  .section-head .num{padding-top:0;font-size:1.4rem}
+}
 
 /* ============================================================
    SCROLLYTELLING — section 01
    ============================================================ */
-.scrolly{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:36px;align-items:start}
-.scrolly .steps{display:grid;gap:0}
-.step{min-height:72vh;display:flex;flex-direction:column;justify-content:center;padding-block:32px;
-  opacity:.32;transition:opacity .45s ease}
+.scenario{
+  border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+  padding:18px 0;
+  display:grid;
+  gap:12px;
+  grid-template-columns:1fr auto;
+  align-items:start;
+  margin-bottom:8px;
+}
+.scenario .row{display:flex;justify-content:space-between;align-items:center;grid-column:1/-1;flex-wrap:wrap;gap:12px}
+.scenario .togs{display:grid;gap:6px;grid-column:1/-1}
+.scenario .note{grid-column:1/-1;font-size:.82rem;color:var(--muted);font-family:var(--sans);margin:0;line-height:1.5}
+
+.scrolly{
+  display:grid;
+  grid-template-columns:minmax(0,380px) minmax(0,1fr);
+  gap:44px;
+  align-items:start;
+}
+.scrolly .steps{display:grid}
+.step{
+  min-height:76vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding-block:40px;
+  opacity:.28;
+  transition:opacity .4s ease;
+}
 .step.in{opacity:1}
-.step .stepnum{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
-.step h3{font-family:var(--display);font-size:clamp(1.05rem,2vw,1.35rem);font-weight:800;line-height:1.2;margin-bottom:10px}
-.step p{color:var(--muted);max-width:46ch;margin-bottom:10px}
+.step .stepnum{
+  font-family:var(--sans);
+  font-size:.68rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:600;
+  margin-bottom:12px;
+}
+.step h3{
+  font-family:var(--serif);
+  font-size:clamp(1.15rem,1.8vw,1.4rem);
+  font-weight:700;
+  line-height:1.25;
+  margin-bottom:14px;
+  max-width:26ch;
+}
+.step p{color:var(--ink-2);font-size:1rem;line-height:1.6;margin-bottom:12px;max-width:46ch}
 .step p b{color:var(--ink);font-weight:700}
-.step .carried{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
-  border-top:1px solid var(--line);padding-top:9px;margin-top:6px}
-.scrolly .sticky{position:sticky;top:72px;display:flex;flex-direction:column;gap:10px;
-  height:calc(100vh - 96px);max-height:880px;min-height:520px}
-.scrolly .sticky .net{flex:1 1 auto;min-height:180px}
-.scrolly .sticky .logcard{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;
-  background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px}
-.scrolly .sticky .log{max-height:150px}
-.scrolly .sticky .payload{max-height:130px;flex:0 0 auto}
-
-/* scenario strip */
-.scenario{display:grid;gap:8px;border:1px solid var(--line);border-radius:8px;padding:12px;
-  background:var(--panel-2);margin-bottom:20px}
-.scenario .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-.scenario .togs{display:grid;gap:6px;flex:1;min-width:220px}
-
-@media (max-width:900px){
-  .scrolly{grid-template-columns:1fr;gap:0}
-  .scrolly .sticky{position:sticky;top:56px;z-index:5;order:-1;background:var(--bg);
-    padding-block:10px;height:auto;max-height:none;min-height:0}
-  .scrolly .sticky .browser{display:none}
-  .scrolly .sticky .net{aspect-ratio:16/9;flex:none;min-height:0}
-  .scrolly .sticky .logcard{max-height:210px}
-  .scrolly .sticky .log{max-height:96px}
-  .scrolly .sticky .payload{max-height:88px;font-size:.64rem}
-  .step{min-height:62vh}
-  .step p{max-width:none}
+.step .carried{
+  font-family:var(--sans);
+  font-size:.7rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  border-top:1px solid var(--rule);
+  padding-top:10px;
+  margin-top:6px;
+  font-weight:500;
 }
 
-/* --- reveal for sections 02-04 --- */
-.reveal{opacity:0;transform:translateY(10px);transition:opacity .55s ease,transform .55s ease}
+/* sticky visual column */
+.scrolly .sticky{
+  position:sticky;
+  top:72px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  height:calc(100vh - 96px);
+  max-height:860px;
+  min-height:560px;
+}
+.scrolly .sticky .visual-title{
+  font-family:var(--sans);
+  font-size:.7rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:600;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--ink);
+}
+
+/* ============================================================
+   BROWSER MOCK
+   ============================================================ */
+.browser{
+  border:1px solid var(--rule);
+  border-radius:2px;
+  overflow:hidden;
+  background:#fff;
+  flex:0 0 auto;
+}
+.browser .bar{
+  display:flex;gap:6px;align-items:center;
+  padding:8px 10px;
+  background:var(--paper-2);
+  border-bottom:1px solid var(--rule);
+}
+.browser .bar i{width:8px;height:8px;border-radius:50%;background:var(--rule-2);display:inline-block}
+.browser .url{
+  flex:1;
+  font-family:var(--mono);
+  font-size:.7rem;
+  color:var(--ink-2);
+  background:#fff;
+  border:1px solid var(--rule);
+  border-radius:2px;
+  padding:4px 8px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.browser .page{
+  padding:10px;
+  display:grid;
+  gap:6px;
+  cursor:pointer;
+  position:relative;
+  min-height:72px;
+  transition:background .15s;
+}
+.browser .page:hover{background:var(--paper-2)}
+.ph{background:var(--paper-2);border-radius:2px;height:7px}
+.ph.w1{width:55%}.ph.w2{width:85%}.ph.w3{width:70%}
+.adslot{
+  border:1px dashed var(--rule-2);
+  border-radius:2px;
+  height:26px;
+  display:grid;place-items:center;
+  font-family:var(--sans);
+  font-size:.6rem;
+  font-weight:600;
+  letter-spacing:.12em;
+  color:var(--muted);
+  transition:all .35s;
+}
+.adslot.filled{
+  border-style:solid;
+  border-color:var(--navy);
+  color:var(--navy);
+  background:var(--navy-soft);
+}
+.browser .page .hint{
+  position:absolute;inset:auto 10px 6px auto;
+  font-family:var(--sans);
+  font-size:.62rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:500;
+}
+
+/* ============================================================
+   NETWORK CANVAS
+   ============================================================ */
+.net{
+  position:relative;
+  background:#fff;
+  border:1px solid var(--rule);
+  border-radius:2px;
+  overflow:hidden;
+  flex:1 1 auto;
+  min-height:280px;
+}
+.net canvas{display:block;width:100%;height:100%;cursor:crosshair}
+.net .hud{
+  position:absolute;left:12px;top:12px;
+  display:flex;gap:16px;flex-wrap:wrap;
+  background:rgba(255,255,255,.92);
+  padding:8px 12px;
+  border:1px solid var(--rule);
+  font-family:var(--sans);
+}
+.hud .k{
+  font-size:.62rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:600;
+}
+.hud .k b{
+  color:var(--ink);
+  font-size:1rem;
+  display:block;
+  font-variant-numeric:tabular-nums;
+  font-family:var(--serif);
+  font-weight:700;
+  letter-spacing:0;
+  text-transform:none;
+  margin-top:2px;
+}
+.net .tline{
+  position:absolute;right:12px;top:12px;
+  font-family:var(--mono);
+  font-size:.7rem;
+  color:var(--ink-2);
+  background:rgba(255,255,255,.92);
+  border:1px solid var(--rule);
+  padding:5px 10px;
+}
+.net .tline b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+.net .tip{
+  position:absolute;pointer-events:none;
+  background:var(--ink);
+  border-radius:2px;
+  padding:6px 10px;
+  font-family:var(--sans);
+  font-size:.72rem;
+  color:var(--paper);
+  white-space:nowrap;
+  transform:translate(-50%,-130%);
+  z-index:5;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.net .tip b{color:#fff;font-weight:600}
+.net .tip[hidden]{display:none}
+
+/* ============================================================
+   LOG
+   ============================================================ */
+.logcard{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  background:#fff;
+  border:1px solid var(--rule);
+  border-radius:2px;
+  padding:12px 14px;
+}
+.logcard h4{
+  font-family:var(--sans);
+  font-size:.7rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  font-weight:600;
+  color:var(--muted);
+  padding-bottom:6px;
+  border-bottom:1px solid var(--rule);
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px;
+}
+.logcard h4 em{
+  font-style:normal;
+  font-family:var(--sans);
+  font-size:.65rem;
+  letter-spacing:.04em;
+  text-transform:none;
+  color:var(--muted-2);
+  font-weight:400;
+}
+.log{
+  display:grid;
+  gap:0;
+  overflow:auto;
+  max-height:150px;
+  margin:0 -4px;
+}
+.req{
+  display:grid;
+  grid-template-columns:56px 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:7px 8px;
+  background:transparent;
+  border:0;
+  border-top:1px solid var(--rule);
+  text-align:left;
+  cursor:pointer;
+  min-width:0;
+  font-family:var(--sans);
+  transition:background .12s;
+  animation:in .25s ease-out;
+}
+@keyframes in{from{opacity:0}to{opacity:1}}
+.req:first-child{border-top:0}
+.req:hover{background:var(--paper-2)}
+.req .t{
+  font-family:var(--mono);
+  font-size:.66rem;
+  color:var(--muted);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;
+}
+.req .n{
+  font-size:.82rem;
+  font-weight:600;
+  color:var(--ink);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.req .n small{
+  display:block;
+  font-weight:400;
+  color:var(--muted);
+  font-size:.72rem;
+  line-height:1.35;
+  white-space:normal;
+  margin-top:1px;
+}
+.req .c{
+  font-family:var(--sans);
+  font-size:.6rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  padding:2px 6px;
+  border:1px solid currentColor;
+  border-radius:2px;
+  text-transform:uppercase;
+}
+.c.fp{color:var(--slate)}
+.c.tp{color:var(--navy)}
+.c.bid{color:var(--rust)}
+.c.fpr{color:var(--crimson)}
+.req[aria-pressed="true"]{background:var(--paper-2);box-shadow:inset 2px 0 0 var(--ink)}
+
+/* ============================================================
+   PAYLOAD
+   ============================================================ */
+.payload{
+  font-family:var(--mono);
+  font-size:.72rem;
+  background:var(--paper-2);
+  border:1px solid var(--rule);
+  border-radius:2px;
+  padding:12px 14px;
+  overflow:auto;
+  max-height:170px;
+  line-height:1.65;
+  white-space:pre-wrap;
+  word-break:break-word;
+  color:var(--ink-2);
+}
+.payload.collapsed{display:none}
+.payload .k{color:var(--muted)}
+.payload .v{color:var(--ink)}
+.payload .hot{color:var(--navy);font-weight:600}
+.payload .pii{color:var(--rust);font-weight:600}
+.payload .cm{color:var(--muted);font-style:italic}
+
+/* ============================================================
+   LEGEND
+   ============================================================ */
+.legend{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
+  font-family:var(--sans);
+  font-size:.72rem;
+  color:var(--muted);
+  letter-spacing:.02em;
+  padding-top:12px;
+  border-top:1px solid var(--rule);
+  margin-top:4px;
+}
+.legend span::before{
+  content:"";
+  display:inline-block;
+  width:10px;height:10px;
+  margin-right:7px;
+  vertical-align:-1px;
+  background:var(--x);
+}
+
+/* ============================================================
+   TOGGLES
+   ============================================================ */
+.tog{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  font-family:var(--sans);
+  font-size:.84rem;
+  line-height:1.4;
+  color:var(--ink-2);
+  cursor:pointer;
+  user-select:none;
+  padding:2px 0;
+}
+.tog input{
+  accent-color:var(--ink);
+  width:15px;height:15px;
+  margin-top:2px;
+  flex-shrink:0;
+}
+
+/* ============================================================
+   PROFILE / SOURCES  (section 02)
+   ============================================================ */
+.grid-02{
+  display:grid;
+  grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) minmax(0,1fr);
+  gap:32px;
+  align-items:start;
+}
+@media (max-width:960px){.grid-02{grid-template-columns:1fr;gap:28px}}
+
+.col-label{
+  font-family:var(--sans);
+  font-size:.7rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:600;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--ink);
+  margin-bottom:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px;
+}
+.col-label em{font-style:normal;font-family:var(--sans);font-size:.68rem;letter-spacing:.04em;text-transform:none;color:var(--muted-2);font-weight:400}
+
+.sources{display:grid}
+.src{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:12px;
+  align-items:start;
+  padding:12px 0;
+  border-top:1px solid var(--rule);
+  background:transparent;
+  cursor:pointer;
+  text-align:left;
+  min-width:0;
+  font-family:var(--sans);
+  transition:background .12s;
+}
+.src:first-child{border-top:0}
+.src:hover{background:var(--paper-2)}
+.src .ic{
+  width:22px;height:22px;
+  color:var(--muted-2);
+  flex-shrink:0;
+  margin-top:1px;
+}
+.src[aria-pressed="true"] .ic{color:var(--navy)}
+.src .body{display:grid;gap:2px;min-width:0}
+.src b{
+  font-size:.92rem;
+  font-weight:600;
+  color:var(--ink-2);
+  font-family:var(--sans);
+}
+.src[aria-pressed="true"] b{color:var(--ink)}
+.src small{
+  font-size:.72rem;
+  color:var(--muted);
+  font-family:var(--sans);
+  line-height:1.45;
+}
+.src .dot{
+  display:inline-block;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--rule-2);
+  margin-right:6px;
+  vertical-align:1px;
+  transition:background .15s;
+}
+.src[aria-pressed="true"] .dot{background:var(--navy)}
+
+.graph{
+  background:#fff;
+  border:1px solid var(--rule);
+  border-radius:2px;
+  overflow:hidden;
+}
+.graph svg{display:block;width:100%;height:auto}
+#gsvg .srcbox{cursor:pointer}
+#gsvg .srcbox:hover rect{stroke-width:2.5}
+#gsvg .ghost rect{stroke:var(--rule-2);stroke-dasharray:4 4}
+#gsvg .ghost text{fill:var(--muted-2)}
+
+.profile{display:grid}
+.profile .row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:center;
+  padding:11px 0;
+  border-top:1px solid var(--rule);
+  font-size:.92rem;
+  font-family:var(--sans);
+}
+.profile .row:first-child{border-top:0}
+.profile .row .lab{
+  font-family:var(--sans);
+  font-size:.66rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--muted);
+  display:block;
+  margin-bottom:3px;
+  font-weight:500;
+}
+.profile .row .val{color:var(--ink);font-weight:600;font-family:var(--serif);font-size:1rem}
+.profile .row.off .val{color:var(--muted);font-weight:400;font-style:italic}
+.profile .row.off .fix{
+  color:var(--navy);
+  font-family:var(--sans);
+  font-size:.72rem;
+  text-decoration:underline;
+  font-style:normal;
+  font-weight:500;
+}
+.profile .row.click{cursor:pointer}
+.profile .row.click:hover{background:var(--paper-2)}
+.conf{
+  width:64px;height:4px;
+  background:var(--rule);
+  overflow:hidden;
+  position:relative;
+}
+.conf i{display:block;height:100%;background:var(--navy);transition:width .4s}
+.profile .tag-src{
+  font-family:var(--sans);
+  font-size:.66rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--navy);
+  font-weight:600;
+}
+.profile .row.note{display:block;font-size:.78rem;color:var(--muted);line-height:1.5;font-family:var(--sans)}
+
+/* link note */
+.linknote{
+  border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+  padding:12px 0;
+  margin-top:8px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+  font-family:var(--sans);
+  font-size:.85rem;
+  color:var(--ink-2);
+  opacity:0;
+  transform:translateY(-3px);
+  transition:opacity .3s,transform .3s;
+  pointer-events:none;
+}
+.linknote.on{opacity:1;transform:none;pointer-events:auto}
+.linknote b{color:var(--ink);font-weight:600}
+
+/* ============================================================
+   PRICING  (section 03)
+   ============================================================ */
+.grid-03{
+  display:grid;
+  grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr) minmax(0,.9fr);
+  gap:32px;
+  align-items:start;
+}
+@media (max-width:960px){.grid-03{grid-template-columns:1fr;gap:28px}}
+
+.presets{
+  display:flex;
+  gap:0;
+  flex-wrap:wrap;
+  border:1px solid var(--rule);
+  border-radius:2px;
+  overflow:hidden;
+  background:#fff;
+  margin-bottom:16px;
+}
+.presets button{
+  font-family:var(--sans);
+  font-size:.72rem;
+  font-weight:500;
+  letter-spacing:.02em;
+  padding:6px 11px;
+  color:var(--ink-2);
+  border-right:1px solid var(--rule);
+  transition:background .15s,color .15s;
+  flex:1 1 auto;
+  text-align:center;
+}
+.presets button:last-child{border-right:0}
+.presets button:hover{background:var(--paper-2)}
+.presets button.active{background:var(--ink);color:var(--paper)}
+
+.sliders{display:grid;gap:18px}
+.sl{display:grid;gap:6px}
+.sl label{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  font-family:var(--sans);
+  font-size:.82rem;
+  color:var(--ink-2);
+  gap:10px;
+  line-height:1.35;
+}
+.sl label b{
+  font-family:var(--mono);
+  font-size:.78rem;
+  font-weight:600;
+  color:var(--ink);
+  letter-spacing:0;
+}
+.sl input[type=range]{
+  width:100%;
+  accent-color:var(--ink);
+  cursor:pointer;
+  height:18px;
+}
+
+.callout{
+  border-left:3px solid var(--ink);
+  padding:10px 14px;
+  font-family:var(--sans);
+  font-size:.85rem;
+  line-height:1.5;
+  color:var(--ink-2);
+  background:var(--paper-2);
+  margin-top:4px;
+}
+.callout b{color:var(--ink);font-weight:600}
+
+.chart{
+  background:#fff;
+  border:1px solid var(--rule);
+  border-radius:2px;
+  overflow:hidden;
+  position:relative;
+}
+.chart svg{display:block;width:100%;height:auto}
+.chart .tip{
+  position:absolute;pointer-events:none;
+  background:var(--ink);
+  color:var(--paper);
+  border-radius:2px;
+  padding:6px 10px;
+  font-family:var(--sans);
+  font-size:.72rem;
+  white-space:nowrap;
+  transform:translate(-50%,-130%);
+  z-index:5;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.chart .tip[hidden]{display:none}
+
+.out{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+  margin-bottom:14px;
+}
+.out .o{
+  padding:14px 16px 14px 0;
+  border-right:1px solid var(--rule);
+  display:grid;
+  gap:4px;
+}
+.out .o:last-child{border-right:0;padding-right:0;padding-left:16px}
+.out .o .v{
+  font-family:var(--serif);
+  font-size:clamp(1.4rem,2.4vw,1.85rem);
+  font-weight:700;
+  line-height:1;
+  color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.out .o.you .v{color:var(--navy)}
+.out .o .l{
+  font-family:var(--sans);
+  font-size:.72rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:500;
+}
+.delta{
+  font-family:var(--sans);
+  font-size:.82rem;
+  color:var(--ink-2);
+  line-height:1.5;
+  margin-bottom:12px;
+}
+.delta.up{color:var(--rust)}
+.delta.down{color:var(--ok)}
+
+.callout.warn{
+  border-left-color:var(--rust);
+  background:var(--rust-soft);
+}
+
+/* ============================================================
+   INDUSTRIES (section 04)
+   ============================================================ */
+.ind3{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:0;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+}
+@media (max-width:960px){.ind3{grid-template-columns:1fr}}
+.ind{
+  padding:24px 22px;
+  border-right:1px solid var(--rule);
+  display:grid;
+  gap:16px;
+  cursor:pointer;
+  transition:background .15s;
+}
+.ind:last-child{border-right:0}
+@media (max-width:960px){
+  .ind{border-right:0;border-bottom:1px solid var(--rule)}
+  .ind:last-child{border-bottom:0}
+}
+.ind:hover{background:var(--paper-2)}
+.ind[data-cur="1"]{background:var(--paper-2);box-shadow:inset 0 0 0 0}
+.ind h3{
+  font-family:var(--serif);
+  font-size:1.35rem;
+  font-weight:700;
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:12px;
+  line-height:1.2;
+}
+.ind h3 .go{
+  font-family:var(--sans);
+  font-size:.68rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  font-weight:600;
+  color:var(--ink-2);
+  padding:3px 8px;
+  border:1px solid var(--rule-2);
+  transition:background .15s,color .15s,border-color .15s;
+  white-space:nowrap;
+}
+.ind[data-cur="1"] h3 .go{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.ind:hover h3 .go{border-color:var(--ink);color:var(--ink)}
+.ind[data-cur="1"]:hover h3 .go{color:var(--paper)}
+
+.ind .sub-label{
+  font-family:var(--sans);
+  font-size:.68rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:600;
+  margin-bottom:6px;
+}
+.ind .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.chip{
+  font-family:var(--sans);
+  font-size:.7rem;
+  padding:3px 8px;
+  background:var(--paper-2);
+  color:var(--ink-2);
+  border:1px solid var(--rule);
+  border-radius:2px;
+  letter-spacing:.01em;
+}
+.ind .out-line{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:1rem;
+  color:var(--ink);
+  line-height:1.35;
+  margin:0;
+}
+.ev{display:grid;gap:0;border-top:1px solid var(--rule);margin-top:4px}
+.ev .e{
+  display:grid;
+  gap:5px;
+  padding:12px 0;
+  border-bottom:1px solid var(--rule);
+  font-family:var(--sans);
+  font-size:.85rem;
+  line-height:1.5;
+  color:var(--ink-2);
+}
+.ev .e:last-child{border-bottom:0}
+.ev .e a{
+  font-family:var(--sans);
+  font-size:.75rem;
+  color:var(--navy);
+  border:0;
+  align-self:start;
+  letter-spacing:.01em;
+}
+.ev .e a:hover{text-decoration:underline}
+.pill{
+  display:inline-block;
+  font-family:var(--sans);
+  font-size:.62rem;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:2px 7px;
+  border:1px solid currentColor;
+  border-radius:2px;
+  width:max-content;
+}
+.p-verified{color:var(--ok)}
+.p-alleged{color:var(--warn)}
+.p-gap{color:var(--crimson)}
+
+.ind .law{
+  font-family:var(--sans);
+  font-size:.78rem;
+  color:var(--muted);
+  line-height:1.5;
+  padding-top:4px;
+  border-top:1px solid var(--rule);
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{
+  padding:36px 0 20px;
+  border-top:1px solid var(--ink);
+  margin-top:52px;
+  font-family:var(--sans);
+  font-size:.82rem;
+  color:var(--muted);
+  line-height:1.6;
+  display:grid;
+  gap:14px;
+  max-width:78ch;
+}
+footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn{
+  font-family:var(--sans);
+  font-size:.75rem;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:8px 14px;
+  color:var(--ink-2);
+  background:#fff;
+  border:1px solid var(--rule-2);
+  border-radius:2px;
+  transition:all .15s;
+}
+.btn:hover{border-color:var(--ink);color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.primary:hover{background:#000}
+
+/* ============================================================
+   REVEAL
+   ============================================================ */
+.reveal{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease}
 .reveal.in{opacity:1;transform:none}
 
-/* --- reduced motion --- */
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media (max-width:900px){
+  body{font-size:16px}
+  .wrap{padding:0 18px 60px}
+  .hero{padding:32px 0 22px}
+  .hero h1{max-width:none}
+  section.block{padding:36px 0}
+
+  .scrolly{grid-template-columns:1fr;gap:0}
+  .scrolly .sticky{
+    position:sticky;
+    top:56px;
+    z-index:5;
+    background:var(--paper);
+    padding-block:10px;
+    height:auto;
+    max-height:none;
+    min-height:0;
+    order:-1;
+  }
+  .scrolly .sticky .browser{display:none}
+  .scrolly .sticky .net{aspect-ratio:16/9;flex:none;min-height:0}
+  .scrolly .sticky .logcard{max-height:220px}
+  .scrolly .sticky .log{max-height:96px}
+  .scrolly .sticky .payload{max-height:96px;font-size:.66rem}
+  .step{min-height:60vh;padding-block:28px}
+  .step p{max-width:none}
+  .step h3{max-width:none}
+
+  .scenario{grid-template-columns:1fr}
+
+  .masthead .nav{display:none}
+  .navbar{padding:8px 0}
+  .navbar .links{gap:14px}
+  .navbar .links a{font-size:.72rem}
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  *,*::before,*::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+  }
   .step{opacity:1}
   .reveal{opacity:1;transform:none}
+  .progress{transition:none}
 }
 </style>
 </head>
 <body>
 <div class="progress" id="progress" aria-hidden="true"></div>
+
 <div class="wrap">
-<nav class="nav">
+
+<!-- ==================== MASTHEAD ==================== -->
+<header class="masthead">
+  <div class="title">Data Pipeline Explorer</div>
+  <nav class="nav">
+    <a href="#s1" data-sec="s1">One page load</a>
+    <a href="#s2" data-sec="s2">The profile</a>
+    <a href="#s3" data-sec="s3">The price</a>
+    <a href="#s4" data-sec="s4">Industries</a>
+  </nav>
+</header>
+
+<!-- ==================== STICKY NAV ==================== -->
+<nav class="navbar">
   <div class="links">
-    <a href="#s1" data-sec="s1">01 One page load</a>
-    <a href="#s2" data-sec="s2">02 The profile</a>
-    <a href="#s3" data-sec="s3">03 The price</a>
-    <a href="#s4" data-sec="s4">04 Industries</a>
+    <a href="#s1" data-sec="s1">01 · Collection</a>
+    <a href="#s2" data-sec="s2">02 · Matching</a>
+    <a href="#s3" data-sec="s3">03 · Pricing</a>
+    <a href="#s4" data-sec="s4">04 · Industries</a>
   </div>
-  <div class="seg" role="group" aria-label="Industry mode" id="seg"></div>
+  <div class="modes" role="group" aria-label="Industry mode" id="seg"></div>
 </nav>
 
+<!-- ==================== HERO ==================== -->
 <header class="hero">
-  <p class="eyebrow">A working model of surveillance pricing · Maryland · 2026</p>
-  <h1>You visit one page. Here is everyone who finds out.</h1>
-  <p class="sub">Three simulations, each built from documented mechanisms. Load a page and watch requests fan out. Toggle data sources and watch a profile assemble. Drag a slider and watch your price move. Switch the industry mode to see the same machine pointed at rent, groceries, or a college aid letter.</p>
-  <div class="big">
-    <button class="stat" data-go="s1" type="button"><span class="v" id="hCompanies">0</span><span class="l">companies reached by one page load</span></button>
-    <button class="stat" data-go="s2" type="button"><span class="v" id="hFields">0</span><span class="l">data fields sent about you</span></button>
-    <button class="stat" data-go="s3" type="button"><span class="v" id="hDelta">+0%</span><span class="l">price change with full profile vs. no data</span></button>
+  <span class="kicker">An interactive explainer</span>
+  <h1>How a page view becomes a price</h1>
+  <p class="deck">Every time you load a web page, dozens of companies receive information about you. This is how that data is collected, matched together, and used to decide what you pay.</p>
+  <div class="meta">
+    <span>Three simulations · built from documented mechanisms</span>
+    <span>Updated <b>October 2026</b></span>
+    <span>Reading time <b>12 minutes</b></span>
+  </div>
+
+  <div class="figures">
+    <button class="fig" data-go="s1" type="button">
+      <span class="v" id="hCompanies">0</span>
+      <span class="l">companies reached</span>
+    </button>
+    <button class="fig" data-go="s2" type="button">
+      <span class="v" id="hFields">0</span>
+      <span class="l">data fields sent</span>
+    </button>
+    <button class="fig" data-go="s3" type="button">
+      <span class="v" id="hDelta">+0%</span>
+      <span class="l">price change from profile</span>
+    </button>
   </div>
 </header>
 
-<!-- ============ 01 · COLLECTION (scrollytelling) ============ -->
+<!-- ==================== SECTION 01 ==================== -->
 <section class="block" id="s1">
-  <div class="head">
-    <div>
-      <p class="eyebrow">01 · Collection</p>
-      <h2 id="s1Title">One page load, in real time</h2>
-      <p class="sub" id="s1Sub"></p>
-    </div>
+  <div class="section-head">
     <div class="num">01</div>
+    <div class="txt">
+      <span class="kicker">Collection</span>
+      <h2>One page load, in real time</h2>
+      <p id="s1Sub">The following simulation shows what happens in the first second after a page loads. It is built from documented mechanisms in the FTC's tracking enforcement and the OpenRTB specification. The counts are representative of a typical ad-supported site.</p>
+    </div>
+  </div>
+
+  <div class="scenario">
+    <div class="row">
+      <div>
+        <div class="kicker">Scenario</div>
+        <h4 style="margin-top:6px;font-family:var(--serif);font-size:1.05rem" id="s1Title"></h4>
+      </div>
+      <button class="btn" id="replay" type="button">Replay</button>
+    </div>
+    <div class="togs">
+      <label class="tog"><input type="checkbox" id="optLogin" checked> Signed in to the site (email known)</label>
+      <label class="tog"><input type="checkbox" id="optLoc" checked> Location permission granted</label>
+      <label class="tog"><input type="checkbox" id="optConsent"> Trackers wait for cookie consent</label>
+    </div>
+    <p class="note">Timing and counts are illustrative, not a measurement of any one site.</p>
   </div>
 
   <div class="scrolly">
     <div class="steps">
-      <div class="scenario">
-        <div class="row">
-          <span class="eyebrow" style="flex:1">Scenario</span>
-          <button class="btn" id="replay" type="button">Replay ▸</button>
-        </div>
-        <div class="togs">
-          <label class="tog"><input type="checkbox" id="optLogin" checked> Logged in to the site (your email is known)</label>
-          <label class="tog"><input type="checkbox" id="optLoc" checked> Location permission granted</label>
-          <label class="tog"><input type="checkbox" id="optConsent"> Trackers wait for cookie consent</label>
-        </div>
-        <p class="sub" style="font-size:.72rem">Illustrative model of a typical ad-supported site. Request timing and counts are representative, not a measurement of any one site.</p>
-      </div>
-
       <article class="step" data-stage="0">
-        <div class="stepnum">Step 1</div>
-        <h3>You open the page</h3>
-        <p>Your browser asks the site for the article. The server sends back HTML, and that <b>first-party request</b> carries what it needs to render: your IP, your browser, your screen size, and any cookie the site already set.</p>
-        <p>This is the only request you intended to make.</p>
+        <div class="stepnum">Step 1 of 7</div>
+        <h3>The browser asks for the page</h3>
+        <p>Your browser sends the site a request. That request includes your <b>IP address</b>, your browser and operating system, your screen size, and any cookie the site has already stored.</p>
+        <p>This is the request you intended to make.</p>
         <div class="carried">1 request · 1 company</div>
       </article>
 
       <article class="step" data-stage="1">
-        <div class="stepnum">Step 2</div>
-        <h3>One line of that HTML loads a tag manager</h3>
-        <p>A single <span class="mono">&lt;script&gt;</span> tag. Its only job is to inject other companies' code into the page.</p>
+        <div class="stepnum">Step 2 of 7</div>
+        <h3>A single script tag loads a tag manager</h3>
+        <p>One line of HTML. The tag manager's only job is to inject other companies' code into the page.</p>
         <p>One line becomes a dozen requests.</p>
         <div class="carried">+1 request · +1 company</div>
       </article>
 
       <article class="step" data-stage="2">
-        <div class="stepnum">Step 3</div>
+        <div class="stepnum">Step 3 of 7</div>
         <h3>Analytics and a social pixel</h3>
-        <p>Analytics assigns you a <b>persistent client ID</b> that follows you across visits. The social pixel sets a cross-site cookie so the same company recognizes you on every site that carries it.</p>
-        <p>And if you're logged in here, the pixel can send a <b>hash of your email address</b> — which links this visit to your real identity, and to every other site where you used that address.</p>
+        <p>Analytics assigns a <b>persistent client ID</b> that follows you across visits. The social pixel sets a cross-site cookie so the same company recognizes you on every site that carries it.</p>
+        <p>If you are signed in, that pixel can send a <b>hash of your email address</b> — a link to your real identity, and to every other site where you have used that address.</p>
         <div class="carried">+2 requests · +2 companies</div>
       </article>
 
       <article class="step" data-stage="3">
-        <div class="stepnum">Step 4</div>
-        <h3>A wrapper packages everything known about you</h3>
-        <p>Header bidding builds the bid request: the page, the ad slots, your consent string, your client ID, and every audience segment anyone has attached to it.</p>
-        <p>It is now a <b>product description</b>, and you are the product.</p>
+        <div class="stepnum">Step 4 of 7</div>
+        <h3>A wrapper packages the page for auction</h3>
+        <p>Header bidding assembles the bid request: the page, the ad slots, the consent string, the client ID, and any audience segments attached to it.</p>
+        <p>This is what gets broadcast.</p>
         <div class="carried">+1 request</div>
       </article>
 
       <article class="step" data-stage="4">
-        <div class="stepnum">Step 5</div>
-        <h3>Three exchanges broadcast it to every bidder</h3>
-        <p>Each exchange fans the request out using <b>OpenRTB</b>. Bidders have milliseconds to decide what you're worth.</p>
-        <p>One wins and shows an ad. <b>Every other bidder keeps the data.</b> The losing bids are not returned.</p>
+        <div class="stepnum">Step 5 of 7</div>
+        <h3>Three exchanges fan the request out to bidders</h3>
+        <p>Each exchange uses a standard called <b>OpenRTB</b>. Bidders have milliseconds to decide what you are worth.</p>
+        <p>One wins and shows an ad. <b>The rest keep the data.</b></p>
         <div class="carried">+3 requests · +35 bidders</div>
       </article>
 
       <article class="step" data-stage="5">
-        <div class="stepnum">Step 6</div>
+        <div class="stepnum">Step 6 of 7</div>
         <h3>The winning ad loads its own trackers</h3>
-        <p>The creative arrives with measurement scripts attached: viewability, verification, attribution. Each one is another company.</p>
-        <p>None of them asked you.</p>
+        <p>The creative arrives with measurement scripts attached: viewability, verification, attribution. Each one is a separate company.</p>
         <div class="carried">+1 request · +3 companies</div>
       </article>
 
       <article class="step" data-stage="6">
-        <div class="stepnum">Step 7</div>
-        <h3>And then the identifiers that survive a cookie wipe</h3>
-        <p><b>Canvas, font and audio fingerprinting</b> recognize this browser after you clear cookies. A data broker beacon writes this page into a profile it will license later.</p>
-        <p>Nothing you saw on the page mentioned either one.</p>
+        <div class="stepnum">Step 7 of 7</div>
+        <h3>And identifiers that survive a cookie wipe</h3>
+        <p>Two scripts do not rely on cookies. <b>Canvas, font and audio fingerprinting</b> identify the browser itself. A data broker beacon writes the visit into a profile the broker will license later.</p>
         <div class="carried">+2 requests · +2 companies</div>
       </article>
     </div>
 
     <div class="sticky" id="stickyCol">
+      <div class="visual-title">Live simulation</div>
       <div class="browser">
         <div class="bar"><i></i><i></i><i></i><span class="url" id="url"></span></div>
         <div class="page" id="pageArea">
-          <span class="hint" id="pageHint">scroll to load ▸</span>
+          <span class="hint" id="pageHint">scroll to load →</span>
           <div class="ph w1"></div><div class="ph w2"></div>
-          <div class="adslot" id="ad1">AD SLOT</div>
+          <div class="adslot" id="ad1">Ad slot</div>
           <div class="ph w3"></div><div class="ph w2"></div>
-          <div class="adslot" id="ad2">AD SLOT</div>
+          <div class="adslot" id="ad2">Ad slot</div>
         </div>
       </div>
 
@@ -414,118 +1383,155 @@ footer b{color:var(--ink)}
       </div>
 
       <div class="logcard">
-        <h3 style="font-size:.78rem">Request log <span class="mono" style="font-size:.6rem;color:var(--muted);font-weight:500">click a row to inspect</span></h3>
+        <h4>Request log <em>click a row to inspect</em></h4>
         <div class="log" id="log"></div>
-        <div class="payload" id="payload"><span class="cm">// Rows appear as you scroll. Click one to see what it carried.</span></div>
       </div>
+
+      <div class="payload collapsed" id="payload"><span class="cm">// Click a request to see what it carried.</span></div>
     </div>
   </div>
 
   <div class="legend">
-    <span style="--x:var(--person)">You / first party</span>
-    <span style="--x:var(--flow)">Tracker</span>
-    <span style="--x:var(--warn)">Ad exchange → bidders</span>
-    <span style="--x:var(--bad)">Fingerprint / broker</span>
-  </div>
-
-  <div style="display:flex;justify-content:flex-end">
-    <button type="button" class="btn" data-go="s2">Next: where this data gets joined ↓</button>
+    <span style="--x:var(--slate)">You · first party</span>
+    <span style="--x:var(--navy)">Tracker</span>
+    <span style="--x:var(--rust)">Exchange → bidders</span>
+    <span style="--x:var(--crimson)">Fingerprint · broker</span>
   </div>
 </section>
 
-<!-- ============ 02 · AGGREGATION ============ -->
+<!-- ==================== SECTION 02 ==================== -->
 <section class="block reveal" id="s2">
-  <div class="head">
-    <div>
-      <p class="eyebrow">02 · Aggregation</p>
-      <h2>Five records that were never about the same person, until a broker matched them</h2>
-      <p class="sub">Toggle sources on and off. Each one carries a key — an email hash, an address, a device ID — that lets it be joined to the others. The inferred fields at the bottom were never collected from anyone; they were computed.</p>
-    </div>
+  <div class="section-head">
     <div class="num">02</div>
+    <div class="txt">
+      <span class="kicker">Matching</span>
+      <h2>How separate records become one profile</h2>
+      <p>Each of the following records was gathered by a different company for a different purpose. They become a single profile only because they share an identifier — an email hash, a home address, a device ID. The fields marked <em>inferred</em> were never collected from anyone. They were calculated.</p>
+    </div>
   </div>
-  <div class="grid3">
-    <div class="card"><h3>Sources</h3><div class="sources" id="sources"></div></div>
-    <div class="card"><div class="graph"><svg id="gsvg" viewBox="0 0 520 420" role="img" aria-label="Records joining into one profile"></svg></div></div>
-    <div class="card">
-      <h3>The profile <span class="mono" id="profCount" style="font-size:.62rem;color:var(--muted)"></span></h3>
+
+  <div class="grid-02">
+    <div>
+      <div class="col-label">Sources <em>click to toggle</em></div>
+      <div class="sources" id="sources"></div>
+    </div>
+
+    <div>
+      <div class="col-label">How the records join</div>
+      <div class="graph">
+        <svg id="gsvg" viewBox="0 0 520 420" role="img" aria-label="Diagram showing separate records joining into one profile"></svg>
+      </div>
+    </div>
+
+    <div>
+      <div class="col-label">The profile <em id="profCount"></em></div>
       <div class="profile" id="profile"></div>
     </div>
   </div>
+
   <div class="linknote" id="linkNote" role="status" aria-live="polite"></div>
+
   <div style="display:flex;justify-content:flex-end">
-    <button type="button" class="btn" data-go="s3">Next: how the profile sets a price ↓</button>
+    <button type="button" class="btn" data-go="s3">Next: how the profile sets a price →</button>
   </div>
 </section>
 
-<!-- ============ 03 · MONETIZATION ============ -->
+<!-- ==================== SECTION 03 ==================== -->
 <section class="block reveal" id="s3">
-  <div class="head">
-    <div>
-      <p class="eyebrow">03 · Monetization</p>
-      <h2 id="s3Title">How an algorithm turns the profile into your price</h2>
-      <p class="sub">Every pricing model asks the same question: at each price, how likely is this person to say yes? With no data it can only use the average customer, so everyone gets the list price. With a profile it estimates <em>your</em> curve, and the revenue-maximizing price moves toward the most you would tolerate. Drag the sliders.</p>
-    </div>
+  <div class="section-head">
     <div class="num">03</div>
+    <div class="txt">
+      <span class="kicker">Pricing</span>
+      <h2 id="s3Title">How a profile sets a price</h2>
+      <p>Every pricing model asks the same question: at each price, how likely is this person to buy? With no data it can only use the average customer. With a profile it estimates the individual's willingness to pay, and the revenue-maximizing price moves toward that estimate. Drag the sliders to see the model respond.</p>
+    </div>
   </div>
-  <div class="grid3">
-    <div class="card">
-      <h3>What the model knows</h3>
+
+  <div class="grid-03">
+    <div>
+      <div class="col-label">What the model knows</div>
       <div class="presets" id="presets">
         <button type="button" data-p="0">No data</button>
         <button type="button" data-p="1">Price-sensitive</button>
-        <button type="button" data-p="2">Urgent + wealthy</button>
+        <button type="button" data-p="2">Urgent · wealthy</button>
         <button type="button" data-p="3">From my profile</button>
       </div>
       <div class="sliders">
-        <div class="sl"><label>Data points about you <b id="vN">0</b></label><input type="range" id="sN" min="0" max="250" value="0"></div>
-        <div class="sl"><label><span id="lInc">Estimated household income</span> <b id="vInc">mid</b></label><input type="range" id="sInc" min="0" max="100" value="50"></div>
-        <div class="sl"><label><span id="lUrg">Urgency signal</span> <b id="vUrg">mid</b></label><input type="range" id="sUrg" min="0" max="100" value="50"></div>
-        <div class="sl"><label><span id="lAlt">Alternatives you could choose</span> <b id="vAlt">many</b></label><input type="range" id="sAlt" min="0" max="100" value="70"></div>
-        <label class="tog" id="coordWrap"><input type="checkbox" id="sCoord"> <span id="lCoord">Competitors pool their private data (alleged RealPage mechanism)</span></label>
+        <div class="sl">
+          <label>Data points about you <b id="vN">0</b></label>
+          <input type="range" id="sN" min="0" max="250" value="0">
+        </div>
+        <div class="sl">
+          <label><span id="lInc">Estimated household income</span> <b id="vInc">mid</b></label>
+          <input type="range" id="sInc" min="0" max="100" value="50">
+        </div>
+        <div class="sl">
+          <label><span id="lUrg">Urgency signal</span> <b id="vUrg">mid</b></label>
+          <input type="range" id="sUrg" min="0" max="100" value="50">
+        </div>
+        <div class="sl">
+          <label><span id="lAlt">Alternatives you could choose</span> <b id="vAlt">many</b></label>
+          <input type="range" id="sAlt" min="0" max="100" value="70">
+        </div>
+        <label class="tog" id="coordWrap" style="margin-top:6px">
+          <input type="checkbox" id="sCoord">
+          <span id="lCoord">Competitors pool their private data (alleged RealPage mechanism)</span>
+        </label>
       </div>
       <div class="callout" id="howto"></div>
     </div>
-    <div class="card">
+
+    <div>
+      <div class="col-label">Demand and the gap</div>
       <div class="chart">
-        <svg id="psvg" viewBox="0 0 560 360" role="img" aria-label="Demand curves and the gap between list price and personalized price"></svg>
+        <svg id="psvg" viewBox="0 0 560 360" role="img" aria-label="Chart showing demand curves and the price gap the profile creates"></svg>
         <div class="tip" id="chartTip" hidden></div>
       </div>
-      <div class="legend">
-        <span style="--x:var(--muted)">Average customer</span>
-        <span style="--x:var(--flow)">Model's estimate of you</span>
-        <span style="--x:var(--flow);opacity:.35">Shaded band = the gap the profile created</span>
+      <div class="legend" style="border-top:0;padding-top:12px">
+        <span style="--x:var(--muted-2)">Average customer</span>
+        <span style="--x:var(--navy)">Model's estimate of you</span>
+        <span style="--x:var(--navy);opacity:.35">Shaded band = price gap</span>
       </div>
     </div>
-    <div class="card">
-      <h3>Output</h3>
+
+    <div>
+      <div class="col-label">Output</div>
       <div class="out">
-        <div class="o"><span class="v" id="oList">$0</span><span class="l" id="oListL">List price (no data)</span></div>
-        <div class="o you"><span class="v" id="oYou">$0</span><span class="l" id="oYouL">Your price</span></div>
+        <div class="o">
+          <span class="v" id="oList">$0</span>
+          <span class="l" id="oListL">List price</span>
+        </div>
+        <div class="o you">
+          <span class="v" id="oYou">$0</span>
+          <span class="l" id="oYouL">Your price</span>
+        </div>
       </div>
       <p class="delta" id="oDelta"></p>
       <div class="callout warn" id="oNote"></div>
-      <p class="sub" style="font-size:.76rem">Simplified model: logistic demand, price set to maximize price × probability. Real vendors use richer models, but the objective and the direction of the result are the same.</p>
+      <p class="note small" style="color:var(--muted);margin-top:12px;font-family:var(--sans);font-size:.78rem;line-height:1.5">Simplified model. Real vendors use richer methods, but the objective and the direction of the result are the same.</p>
     </div>
   </div>
 </section>
 
-<!-- ============ 04 · INDUSTRIES ============ -->
+<!-- ==================== SECTION 04 ==================== -->
 <section class="block reveal" id="s4">
-  <div class="head">
-    <div>
-      <p class="eyebrow">04 · Where it is already happening</p>
-      <h2>The same machine, three industries</h2>
-      <p class="sub">What feeds the profile, what the model outputs, and whether any law applies. Pills mark what is verified in a primary source, what is alleged in a pending case, and where no law reaches.</p>
-    </div>
+  <div class="section-head">
     <div class="num">04</div>
+    <div class="txt">
+      <span class="kicker">Industries</span>
+      <h2>Three industries, one method</h2>
+      <p>The same technique is already in use across housing, grocery and higher education. Below: what feeds the profile, what the model produces, and whether any current law reaches it. Labels distinguish what is <em>verified</em> in a primary source from what is <em>alleged</em> in a pending case.</p>
+    </div>
   </div>
   <div class="ind3" id="ind3"></div>
 </section>
 
+<!-- ==================== FOOTER ==================== -->
 <footer>
-  <p><b>What this page claims.</b> The page-load simulation models mechanisms documented by the FTC and in OpenRTB specifications; its counts are illustrative. The profile and pricing models are simplified but directionally faithful to how enrollment-management, retail and revenue-management vendors describe their own products.</p>
-  <p><b>What it does not claim.</b> No source shows location or browsing data feeding college aid models; the education mode does not include it. Allegations in pending litigation are labeled as allegations.</p>
+  <p><b>What this page claims.</b> The page-load simulation models mechanisms documented by the FTC and in the OpenRTB specification; its counts are illustrative. The profile and pricing models are simplified but directionally faithful to how enrollment-management, retail and revenue-management vendors describe their own products.</p>
+  <p><b>What it does not claim.</b> No source shows location or browsing data feeding college aid models; the education mode does not include it. Allegations in pending litigation are labeled as allegations. This site is not affiliated with the companies or agencies named.</p>
 </footer>
+
 </div>
 
 <script>
@@ -537,24 +1543,24 @@ const fmt = n => "$" + Math.round(n).toLocaleString();
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ============================================================
-   INDUSTRY MODES
+   MODES
    ============================================================ */
 const MODES = {
   general:{ name:"General", url:"news-example.com/article",
-    s1:"A page you read for free",
+    s1:"Reading a free article",
     s1sub:"An ad-supported article. Nothing is purchased; the page itself is the transaction.",
     price:{ base:60, unit:"", label:"a product you buy online",
       inc:"Estimated household income", urg:"Urgency signal (visits, cart, searches)",
       alt:"Alternatives you could choose", coord:false, invert:false }},
   housing:{ name:"Housing", url:"apartments-example.com/baltimore/2br",
     s1:"Searching for an apartment",
-    s1sub:"A listing site. Your search is already a signal: in-market, budget range, neighborhood.",
+    s1sub:"A listing site. The search itself is a signal: in-market, budget range, neighborhood.",
     price:{ base:1800, unit:"/mo", label:"monthly rent",
       inc:"Estimated household income", urg:"Urgency (saved listings, repeat visits, move-in date)",
       alt:"Vacant units nearby you could choose", coord:true, invert:false }},
   retail:{ name:"Grocery", url:"grocery-example.com/cart",
     s1:"Opening a grocery app",
-    s1sub:"Your loyalty ID ties this session to every basket you have ever scanned.",
+    s1sub:"A loyalty ID ties this session to every basket you have ever scanned.",
     price:{ base:62, unit:"", label:"a weekly basket",
       inc:"Estimated household income", urg:"Urgency (low stock at home, delivery window)",
       alt:"Other stores within reach", coord:false, invert:false }},
@@ -568,7 +1574,7 @@ const MODES = {
 let mode = "general";
 
 /* ============================================================
-   PRICING MODEL  (pure function so it can be reused for previews)
+   PRICING MODEL
    ============================================================ */
 const sig = x => 1/(1+Math.exp(-x));
 
@@ -605,7 +1611,7 @@ function priceModel(){
 }
 
 /* ============================================================
-   01 · PAGE LOAD SIMULATION
+   SECTION 01 — PAGE LOAD SIMULATION
    ============================================================ */
 const FIELDS = {
   url:["site.page","the exact page","hot"],
@@ -624,14 +1630,13 @@ const FIELDS = {
   ifa:["device.ifa","advertising ID","pii"],
   geo:["device.geo.lat/lon","precise location","pii"],
   uid:["user.id / buyeruid","exchange-assigned user ID","hot"],
-  seg:["user.data.segment","audience segments (in-market: housing)","hot"],
+  seg:["user.data.segment","audience segments","hot"],
   canvas:["canvas hash","GPU rendering fingerprint","hot"],
   fonts:["fonts[]","installed fonts","hot"],
   tz:["timezone","time zone + language",""],
   audio:["audio ctx","audio fingerprint","hot"]
 };
 
-/* Each request carries `s` = the scroll stage that fires it. */
 function reqPlan(){
   const login   = $("#optLogin").checked;
   const loc     = $("#optLoc").checked;
@@ -641,46 +1646,46 @@ function reqPlan(){
 
   R.push({ s:0, t:0, n:m.url.split("/")[0], d:"The page you asked for", c:"fp",
     f:["url","ip","ua","scr","cookie"],
-    note:"First party. Needed to render the page. The only request you intended." });
+    note:"First party. Needed to render the page." });
 
   const tag = consent ? 650 : 140;
 
   R.push({ s:1, t:tag, n:"Tag manager", d:"Loads other companies' code", c:"tp",
     f:["url","ref","cid"],
-    note:"A loader whose only job is to inject other trackers. One line in the page becomes a dozen requests." });
+    note:"A loader whose only job is to inject other trackers." });
 
   R.push({ s:2, t:tag+60, n:"Analytics", d:"Page view, session, client ID", c:"tp",
     f:["url","ref","scr","cid","sess"],
-    note:"Assigns you a persistent client ID that follows you across visits." });
+    note:"Assigns a persistent client ID that follows you across visits." });
 
   R.push({ s:2, t:tag+120, n:"Social pixel", d:"Event + cross-site cookie" + (login ? " + hashed email" : ""), c:"tp",
     f:["url","ev","fbp"].concat(login ? ["email"] : []),
     note: login
-      ? "Because you are logged in, the pixel can send a hash of your email. That links this visit to your social profile and to every other site where you used that email."
-      : "Without a login the pixel still sets a cross-site cookie that recognizes you on every site carrying the same pixel." });
+      ? "Because you are signed in, the pixel can send a hash of your email address. That links this visit to your social profile and to every other site where you have used that email."
+      : "Without a sign-in the pixel still sets a cross-site cookie that recognizes you on every site carrying the same pixel." });
 
-  R.push({ s:3, t:tag+190, n:"Header-bidding wrapper", d:"Packages your profile for auction", c:"tp",
+  R.push({ s:3, t:tag+190, n:"Header-bidding wrapper", d:"Packages the page for auction", c:"tp",
     f:["url","slots","consent","cid"],
-    note:"Builds the bid request: everything known about you and the page, formatted for ad exchanges." });
+    note:"Builds the bid request: the page, the ad slots, the consent string, the client ID, and any audience segments attached to it." });
 
   ["Exchange A","Exchange B","Exchange C"].forEach((e,i) => {
     R.push({ s:4, t:tag+240+i*70, n:e, d:"Bid request → bidders", c:"bid", fan:11+i*3,
       f:["url","ref","ip","ua","ifa","uid","seg"].concat(loc ? ["geo"] : []),
-      note:"OpenRTB bid request. Broadcast to every bidder on the exchange. One wins and shows an ad; every other bidder keeps the data. " +
-           (loc ? "Includes precise lat/lon because location was allowed." : "No GPS, but the IP still resolves to a city.") });
+      note:"OpenRTB bid request, broadcast to every bidder on the exchange. One wins the auction. The rest keep the data. " +
+           (loc ? "Includes precise lat/lon because location was permitted." : "No GPS, but the IP resolves to a city.") });
   });
 
   R.push({ s:5, t:tag+560, n:"Winning ad + verification", d:"Creative, viewability, 3 more trackers", c:"tp",
     f:["url","ip","ua","cid"],
-    note:"The ad itself loads its own measurement scripts. Each is another company." });
+    note:"The ad itself loads measurement scripts. Each one is a separate company." });
 
-  R.push({ s:6, t:tag+700, n:"Fingerprint script", d:"Identifies you without any cookie", c:"fpr",
+  R.push({ s:6, t:tag+700, n:"Fingerprint script", d:"Identifies you without cookies", c:"fpr",
     f:["canvas","fonts","tz","audio","ua","scr"],
-    note:"Canvas, font and audio fingerprinting recognize this browser after cookies are cleared. The FTC has named this class of technique in its tracking enforcement." });
+    note:"Canvas, font and audio fingerprinting identify the browser itself, even after cookies are cleared. The FTC has named this technique in its tracking enforcement." });
 
-  R.push({ s:6, t:tag+820, n:"Data broker beacon", d:"Appends this visit to your file", c:"fpr",
+  R.push({ s:6, t:tag+820, n:"Data broker beacon", d:"Appends the visit to a stored file", c:"fpr",
     f:["cid","ifa","seg"].concat(login ? ["email"] : []),
-    note:"A broker that bought a seat as a bidder, or runs a pixel of its own, writes this page into a profile it will license later." });
+    note:"A broker that bought a seat as a bidder, or runs its own pixel, writes the visit into a profile it will license later." });
 
   return R;
 }
@@ -702,16 +1707,23 @@ function sizeCanvas(){
 }
 if (window.ResizeObserver) new ResizeObserver(() => { sizeCanvas(); if (!playing) drawNet(performance.now()); }).observe($("#net"));
 
-const COL = { fp:"#7b96ff", tp:"#36e8ff", bid:"#ffb13b", fpr:"#ff4f63" };
+/* Node colors, chosen for paper background */
+const COL = { fp:"#1f2937", tp:"#1e3a8a", bid:"#b45309", fpr:"#7f1d1d" };
 
 function addNode(label, c, ring, parent){
   const n = { label, c, ring, parent, x:0, y:0, born:performance.now() };
   const cx = W/2, cy = H/2;
-  const r = ring === 0 ? 0 : ring === 1 ? Math.min(W,H)*.27 : Math.min(W,H)*.44;
+  const r = ring === 0 ? 0 : ring === 1 ? Math.min(W,H)*.28 : Math.min(W,H)*.45;
   if (ring === 0){ n.x = cx; n.y = cy; }
-  else {
+  else if (ring === 1){
     const k = nodes.filter(m => m.ring === ring).length;
-    const a = -Math.PI/2 + k*(ring === 1 ? .78 : .21);
+    const a = -Math.PI/2 + k*0.78;
+    n.x = cx + Math.cos(a)*r;
+    n.y = cy + Math.sin(a)*r;
+  } else {
+    const k = nodes.filter(m => m.ring === ring).length;
+    const total = 24;
+    const a = -Math.PI/2 + k*(2*Math.PI/total) + 0.4;
     n.x = cx + Math.cos(a)*r;
     n.y = cy + Math.sin(a)*r;
   }
@@ -724,13 +1736,27 @@ function drawNet(now){
   ctx.clearRect(0,0,W,H);
   const dp = devicePixelRatio;
 
-  nodes.forEach(n => {
-    if (!n.parent) return;
-    ctx.strokeStyle = n.c === "bid" ? "rgba(255,177,59,.25)" : "rgba(54,232,255,.18)";
-    ctx.lineWidth = 1*dp;
-    ctx.beginPath(); ctx.moveTo(n.parent.x, n.parent.y); ctx.lineTo(n.x, n.y); ctx.stroke();
+  /* ring guides */
+  ctx.strokeStyle = "rgba(20,20,20,.08)";
+  ctx.lineWidth = 1*dp;
+  [0.28, 0.45].forEach(frac => {
+    ctx.beginPath();
+    ctx.arc(W/2, H/2, Math.min(W,H)*frac, 0, 7);
+    ctx.stroke();
   });
 
+  /* edges */
+  nodes.forEach(n => {
+    if (!n.parent) return;
+    ctx.strokeStyle = n.c === "bid" ? "rgba(180,83,9,.28)" : "rgba(30,58,138,.24)";
+    ctx.lineWidth = 1*dp;
+    ctx.beginPath();
+    ctx.moveTo(n.parent.x, n.parent.y);
+    ctx.lineTo(n.x, n.y);
+    ctx.stroke();
+  });
+
+  /* packets */
   if (!RM){
     packets = packets.filter(p => now - p.t < p.d);
     packets.forEach(p => {
@@ -738,33 +1764,43 @@ function drawNet(now){
       const x = p.a.x + (p.b.x - p.a.x)*k;
       const y = p.a.y + (p.b.y - p.a.y)*k;
       ctx.fillStyle = COL[p.c];
-      ctx.shadowColor = COL[p.c];
-      ctx.shadowBlur = 10*dp;
-      ctx.beginPath(); ctx.arc(x, y, 3*dp, 0, 7); ctx.fill();
-      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(x, y, 2.5*dp, 0, 7);
+      ctx.fill();
     });
   }
 
+  /* nodes */
   nodes.forEach(n => {
     if (selReq !== null && n.req === selReq){
-      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2*dp;
-      ctx.beginPath(); ctx.arc(n.x, n.y, (n.ring === 2 ? 8 : 12)*dp, 0, 7); ctx.stroke();
+      ctx.strokeStyle = "#141414";
+      ctx.lineWidth = 2*dp;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, (n.ring === 2 ? 8 : 14)*dp, 0, 7);
+      ctx.stroke();
     }
     const age = RM ? 1 : Math.min(1, (now - n.born)/300);
-    const rr = (n.ring === 0 ? 16 : n.ring === 1 ? 7 : 4) * dp * (0.6 + 0.4*age);
-    ctx.fillStyle = n.ring === 0 ? "#7b96ff" : COL[n.c];
-    ctx.shadowColor = ctx.fillStyle;
-    ctx.shadowBlur = (n.ring === 0 ? 22 : 8)*dp;
-    ctx.beginPath(); ctx.arc(n.x, n.y, rr, 0, 7); ctx.fill();
-    ctx.shadowBlur = 0;
+    const baseR = n.ring === 0 ? 18 : n.ring === 1 ? 7 : 3.5;
+    const rr = baseR * dp * (0.55 + 0.45*age);
+    ctx.fillStyle = n.ring === 0 ? "#141414" : COL[n.c];
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, rr, 0, 7);
+    ctx.fill();
 
+    /* labels */
     if (n.ring < 2){
-      ctx.fillStyle = "#eef2f8";
-      ctx.font = `${(n.ring === 0 ? 11 : 9)*dp}px JetBrains Mono, monospace`;
+      ctx.fillStyle = "#141414";
+      ctx.font = `600 ${(n.ring === 0 ? 11 : 9)*dp}px Inter, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(n.label, n.x, n.y + (n.ring === 0 ? 30 : 18)*dp);
+      ctx.fillText(n.label, n.x, n.y + (n.ring === 0 ? 32 : 18)*dp);
     }
   });
+
+  /* center label */
+  ctx.fillStyle = "#fbfaf6";
+  ctx.font = `700 ${9*dp}px Inter, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("YOU", W/2, H/2 + 3*dp);
 }
 
 function tick(now){
@@ -778,11 +1814,7 @@ function tick(now){
   if (fired < plan.length || packets.length) raf = requestAnimationFrame(tick);
   else {
     playing = false;
-    $("#pageHint").textContent = "click any node ▸";
-    if (selReq === null && plan.length){
-      const bid = plan.findIndex(r => r.c === "bid");
-      if (bid > -1) showPayload(bid);
-    }
+    $("#pageHint").textContent = "click any node →";
   }
 }
 
@@ -795,18 +1827,25 @@ function fire(r, i){
   packets.push({ a:you, b:n, t:performance.now(), d: RM ? 0 : 420, c:r.c });
 
   if (r.fan){
-    for (let k=0; k<r.fan; k++){
-      const b = addNode("Bidder "+(k+1)+" via "+r.n, r.c, 2, n);
-      b.req = i; companies++; bidders++;
+    const shown = Math.min(r.fan, 7);
+    companies += r.fan;
+    bidders   += r.fan;
+    for (let k=0; k<shown; k++){
+      const b = addNode("Bidder "+(k+1), r.c, 2, n);
+      b.req = i;
       packets.push({ a:n, b, t:performance.now()+60+k*25, d: RM ? 0 : 380, c:"bid" });
+    }
+    if (r.fan > shown){
+      const b = addNode("+"+(r.fan - shown)+" more", r.c, 2, n);
+      b.req = i;
     }
   }
 
   r.f.forEach(f => fieldSet.add(f));
 
   if (r.n.startsWith("Winning")){
-    $("#ad1").className = "adslot filled"; $("#ad1").textContent = "TARGETED AD";
-    $("#ad2").className = "adslot filled"; $("#ad2").textContent = "TARGETED AD";
+    $("#ad1").className = "adslot filled"; $("#ad1").textContent = "Targeted ad";
+    $("#ad2").className = "adslot filled"; $("#ad2").textContent = "Targeted ad";
   }
 
   $("#kReq").textContent = i + 1 + (r.fan || 0);
@@ -814,27 +1853,19 @@ function fire(r, i){
   $("#kBid").textContent = bidders;
   $("#hCompanies").textContent = companies;
   $("#hFields").textContent    = fieldSet.size;
-  pulse($("#hCompanies")); pulse($("#hFields"));
 
   const el = document.createElement("button");
   el.type = "button";
   el.className = "req";
   el.dataset.i = i;
+  const tag = {fp:"1st",tp:"3rd",bid:"RTB",fpr:"ID"}[r.c];
   el.innerHTML =
     `<span class="t">${Math.round(r.t)}ms</span>` +
-    `<span class="n">${r.n}${r.fan ? ` <span style="color:var(--warn)">×${r.fan}</span>` : ""}` +
+    `<span class="n">${r.n}${r.fan ? ` · ${r.fan} bidders` : ""}` +
     `<small>${r.d}</small></span>` +
-    `<span class="c ${{fp:"1st",tp:"3rd",bid:"RTB",fpr:"ID"}[r.c]}">${{fp:"1st",tp:"3rd",bid:"RTB",fpr:"ID"}[r.c]}</span>`;
+    `<span class="c ${r.c}">${tag}</span>`;
   $("#log").appendChild(el);
   $("#log").scrollTop = $("#log").scrollHeight;
-}
-
-let pulseTimer = null;
-function pulse(el){
-  if (RM) return;
-  el.classList.add("pulse");
-  clearTimeout(pulseTimer);
-  pulseTimer = setTimeout(() => el.classList.remove("pulse"), 500);
 }
 
 function showPayload(i){
@@ -843,6 +1874,7 @@ function showPayload(i){
   $$(".req").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
   const r = plan[i];
   if (!r) return;
+  $("#payload").classList.remove("collapsed");
   const lines = r.f.map(f => {
     const d = FIELDS[f];
     return `<span class="k">${d[0].padEnd(22)}</span> <span class="v ${d[2]}">${d[1]}</span>`;
@@ -860,12 +1892,13 @@ function resetSim(){
   $("#log").innerHTML = "";
   $("#kReq").textContent = 0; $("#kCo").textContent = 0; $("#kBid").textContent = 0;
   $("#tms").textContent = 0;
-  ["ad1","ad2"].forEach(id => { const a = $("#"+id); a.className = "adslot"; a.textContent = "AD SLOT"; });
-  $("#payload").innerHTML = '<span class="cm">// Rows appear as you scroll. Click one to see what it carried.</span>';
+  ["ad1","ad2"].forEach(id => { const a = $("#"+id); a.className = "adslot"; a.textContent = "Ad slot"; });
+  $("#payload").classList.add("collapsed");
+  $("#payload").innerHTML = '<span class="cm">// Click a request to see what it carried.</span>';
   $("#url").textContent = MODES[mode].url;
-  $("#pageHint").textContent = "scroll to load ▸";
+  $("#pageHint").textContent = "scroll to load →";
   sizeCanvas();
-  addNode("YOU", "fp", 0, null);
+  addNode("", "fp", 0, null);
   drawNet(performance.now());
 }
 
@@ -879,7 +1912,7 @@ function fireTo(stage){
   }
   if (any && !playing){
     playing = true;
-    t0 = performance.now() - (plan[Math.max(0, fired-1)].t || 0) * 0;
+    t0 = performance.now() - (plan[Math.max(0, fired-1)].t || 0);
     raf = requestAnimationFrame(tick);
   }
 }
@@ -890,7 +1923,7 @@ function replay(){
   fireTo(target);
 }
 
-/* --- scroll observer for the 7 steps --- */
+/* --- intersection observer for steps --- */
 const stepObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
     e.target.classList.toggle("in", e.isIntersecting);
@@ -903,7 +1936,6 @@ const stepObs = new IntersectionObserver(entries => {
     }
   });
 }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
-
 $$(".step").forEach(s => stepObs.observe(s));
 
 /* --- controls --- */
@@ -939,7 +1971,6 @@ cv.addEventListener("mousemove", e => {
   netTip.innerHTML = `<b>${lab}</b>${r ? `<br>${r.f.length} fields · click to inspect` : ""}`;
   netTip.style.left = h.px + "px";
   netTip.style.top  = h.py + "px";
-  /* flip near the right edge so it never runs off-canvas */
   netTip.style.transform = h.px > h.w * 0.7 ? "translate(-100%,-130%)" : "translate(-50%,-130%)";
   netTip.hidden = false;
 });
@@ -952,18 +1983,18 @@ cv.addEventListener("click", e => {
 });
 
 /* ============================================================
-   02 · PROFILE BUILDER
+   SECTION 02 — PROFILE BUILDER
    ============================================================ */
 const SVGI = {
-  browser:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>',
-  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
-  card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>',
-  pub:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V9l7-5 7 5v12M10 21v-6h4v6"/></svg>',
-  court:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M5 7l7-4 7 4M4 11l3 6h-6zM17 11l3 6h-6z"/></svg>',
-  test:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12l2 2 4-4M9 17h6"/></svg>'
+  browser:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+  card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>',
+  pub:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M5 21V9l7-5 7 5v12M10 21v-6h4v6"/></svg>',
+  court:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 7l7-4 7 4M4 11l3 6h-6zM17 11l3 6h-6z"/></svg>',
+  test:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12l2 2 4-4M9 17h6"/></svg>'
 };
 const SRC = [
-  { id:"browser", ic:"browser", n:"Browser trackers",  k:["email#","tracker ID"],  fields:["email#","in-market: housing","pages viewed","device"], note:"from 01" },
+  { id:"browser", ic:"browser", n:"Browser trackers",  k:["email#","tracker ID"],  fields:["email#","in-market: housing","pages viewed","device"], note:"from section 01" },
   { id:"phone",   ic:"phone",   n:"Phone app SDKs",    k:["ad ID"],                fields:["ad ID","lat/lon history","apps installed"],            note:"RTB bidstream" },
   { id:"loyalty", ic:"card",    n:"Loyalty card",      k:["email#","address"],     fields:["name","address","email#","purchases 3 yrs","brands"],   note:"grocer / retailer" },
   { id:"public",  ic:"pub",     n:"Public records",    k:["address"],              fields:["address","home value","voter reg","age range"],        note:"county + state" },
@@ -976,7 +2007,7 @@ const INFER = [
   { n:"Life stage",                 need:["loyalty"], v:"Likely parent of a young child", why:"purchases" },
   { n:"In-market for housing",      need:["browser","phone"], any:true, v:"High (moving within 60 days)", why:"listing visits + location history" },
   { n:"Housing risk flag",          need:["court"], v:"Eviction filing present", why:"even though dismissed" },
-  { n:"Ability to pay (pre-FAFSA)", need:["test","public"], v:"Pell unlikely · 'affordability risk: low'", why:"income estimate + self-reported income + home value" }
+  { n:"Ability to pay (pre-FAFSA)", need:["test","public"], v:"Pell unlikely · 'affordability risk: low'", why:"income estimate + self-reported + home value" }
 ];
 
 let on = new Set(["browser"]);
@@ -987,11 +2018,14 @@ function visibleSources(){
 
 function renderSources(){
   const list = visibleSources();
-  $("#sources").innerHTML = list.map(s =>
-    `<button type="button" class="src" data-id="${s.id}" aria-pressed="${on.has(s.id)}">` +
+  $("#sources").innerHTML = list.map(s => {
+    const active = on.has(s.id);
+    return `<button type="button" class="src" data-id="${s.id}" aria-pressed="${active}">` +
       `<span class="ic">${SVGI[s.ic]}</span>` +
-      `<span><b>${s.n}</b><small>keys: ${s.k.join(" · ")} · ${s.note}</small></span>` +
-    `</button>`).join("");
+      `<span class="body"><b><span class="dot"></span>${s.n}</b>` +
+      `<small>Keys: ${s.k.join(" · ")} — ${s.note}</small></span>` +
+    `</button>`;
+  }).join("");
 }
 
 function renderGraph(){
@@ -1007,30 +2041,30 @@ function renderGraph(){
     s.k.forEach(k => {
       const shared = keys[k] > 1;
       const p = `M${x+90},${y} C${x+200},${y} ${cx-150},${cy} ${cx-60},${cy}`;
-      out += `<path d="${p}" fill="none" stroke="${shared ? '#36e8ff' : '#2f4160'}" stroke-width="${shared ? 2 : 1}" stroke-dasharray="${shared ? '' : '4 4'}" opacity="${shared ? .9 : .6}"/>`;
+      out += `<path d="${p}" fill="none" stroke="${shared ? '#1e3a8a' : '#a8a49a'}" stroke-width="${shared ? 2 : 1}" stroke-dasharray="${shared ? '' : '4 4'}" opacity="${shared ? 1 : .7}"/>`;
       if (shared && !RM)
-        out += `<circle r="3" fill="#36e8ff"><animateMotion dur="${2+i*.3}s" repeatCount="indefinite" path="${p}"/></circle>`;
+        out += `<circle r="3" fill="#1e3a8a"><animateMotion dur="${2+i*.3}s" repeatCount="indefinite" path="${p}"/></circle>`;
     });
     out += `<g class="srcbox" data-id="${s.id}" role="button" tabindex="0"><title>Click to remove ${s.n}</title>` +
-      `<rect x="${x-60}" y="${y-18}" width="150" height="36" rx="5" fill="#141b28" stroke="#36e8ff"/>` +
-      `<text x="${x+15}" y="${y-3}" text-anchor="middle" font-family="Manrope" font-weight="700" font-size="11" fill="#eef2f8">${s.n}</text>` +
-      `<text x="${x+15}" y="${y+11}" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="#8793a8">${s.k.join(" · ")}</text></g>`;
+      `<rect x="${x-60}" y="${y-18}" width="150" height="36" rx="2" fill="#ffffff" stroke="#1e3a8a"/>` +
+      `<text x="${x+15}" y="${y-3}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="11" fill="#141414">${s.n}</text>` +
+      `<text x="${x+15}" y="${y+11}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#6b6b6b">${s.k.join(" · ")}</text></g>`;
   });
 
   visibleSources().filter(s => !on.has(s.id)).forEach((s,i) => {
     const x = 470, y = 30 + i*30;
     out += `<g class="srcbox ghost" data-id="${s.id}" role="button" tabindex="0"><title>Click to add ${s.n}</title>` +
-      `<rect x="${x-20}" y="${y-11}" width="68" height="22" rx="4" fill="#0e131d"/>` +
-      `<text x="${x+14}" y="${y+3}" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="#8793a8">+ ${s.n.split(" ")[0]}</text></g>`;
+      `<rect x="${x-20}" y="${y-11}" width="68" height="22" rx="2" fill="#fbfaf6"/>` +
+      `<text x="${x+14}" y="${y+3}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7.5">+ ${s.n.split(" ")[0]}</text></g>`;
   });
 
-  out += `<circle cx="${cx}" cy="${cy}" r="${48 + act.length*5}" fill="rgba(54,232,255,.08)" stroke="#36e8ff" stroke-width="2"/>`;
-  out += `<text x="${cx}" y="${cy-6}" text-anchor="middle" font-family="Unbounded" font-weight="800" font-size="13" fill="#eef2f8">PERSON A</text>`;
-  out += `<text x="${cx}" y="${cy+12}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#36e8ff">${act.length} source${act.length === 1 ? "" : "s"} joined</text>`;
+  out += `<circle cx="${cx}" cy="${cy}" r="${48 + act.length*5}" fill="rgba(30,58,138,.08)" stroke="#1e3a8a" stroke-width="1.5"/>`;
+  out += `<text x="${cx}" y="${cy-6}" text-anchor="middle" font-family="Source Serif 4, Georgia, serif" font-weight="700" font-size="14" fill="#141414">PERSON A</text>`;
+  out += `<text x="${cx}" y="${cy+12}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="10" fill="#1e3a8a">${act.length} source${act.length === 1 ? "" : "s"} joined</text>`;
 
   const shared = Object.entries(keys).filter(e => e[1] > 1).map(e => e[0]);
-  out += `<text x="${cx}" y="${cy + 70 + act.length*5}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">` +
-    `${shared.length ? "match keys: " + shared.join(", ") : "no shared keys yet — records stay separate"}</text>`;
+  out += `<text x="${cx}" y="${cy + 70 + act.length*5}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#6b6b6b">` +
+    `${shared.length ? "match keys: " + shared.join(", ") : "no shared keys — records stay separate"}</text>`;
 
   $("#gsvg").innerHTML = out;
 }
@@ -1042,7 +2076,7 @@ function renderProfile(){
   act.forEach(s => s.fields.forEach(f => raw.push(f)));
 
   let html = `<div class="row"><span><span class="lab">Collected</span>${raw.length ? raw.join(" · ") : "—"}</span>` +
-             `<span class="tag src">${raw.length} fields</span></div>`;
+             `<span class="tag-src">${raw.length} fields</span></div>`;
 
   let cnt = 0;
   INFER.forEach(f => {
@@ -1052,16 +2086,15 @@ function renderProfile(){
     const ok = f.any ? have > 0 : have === f.need.length;
     const conf = ok ? Math.min(100, 45 + have*25 + act.length*4) : 0;
     if (ok) cnt++;
-    html += `<div class="row inf ${ok ? "" : "off click"}" ${ok ? "" : `data-need="${f.need.join(",")}" title="Click to add the sources this needs"`}>` +
-      `<span><span class="lab">Inferred · ${f.why}</span>${f.n}: <b>${ok ? f.v : `<span class="fix">add ${f.need.join(" + ")} ▸</span>`}</b></span>` +
+    html += `<div class="row ${ok ? "" : "off click"}" ${ok ? "" : `data-need="${f.need.join(",")}" title="Click to add the sources this needs"`}>` +
+      `<span><span class="lab">Inferred · ${f.why}</span><span class="val">${f.n}: ${ok ? f.v : `<span class="fix">add ${f.need.join(" + ")} →</span>`}</span></span>` +
       `<span class="conf" title="confidence"><i style="width:${conf}%"></i></span></div>`;
   });
 
-  html += `<div class="row"><span class="tag">Inferred fields were computed, not collected. Nothing you consented to covers them.</span><span></span></div>`;
+  html += `<div class="row note"><span>Inferred fields were calculated, not collected. No consent covers them.</span></div>`;
   $("#profile").innerHTML = html;
-  $("#profCount").textContent = `${act.length} sources · ${cnt} inferences`;
+  $("#profCount").textContent = `${act.length} source${act.length === 1 ? "" : "s"} · ${cnt} inference${cnt === 1 ? "" : "s"}`;
 
-  /* Feed the count into section 03 and surface the causal link. */
   const n = Math.min(250, raw.length * 18);
   $("#sN").value = n;
   renderPrice();
@@ -1075,8 +2108,8 @@ function showLinkNote(fields, n){
     el.classList.remove("on");
     return;
   }
-  el.innerHTML = `<span>→</span><span>Section 02 is now feeding <b>${n} data points</b> into the pricing model below.</span>` +
-                 `<button type="button" class="btn" data-go="s3">See the effect ↓</button>`;
+  el.innerHTML = `<span>Section 02 is now feeding <b>${n} data points</b> into the pricing model in section 03.</span>` +
+                 `<button type="button" class="btn" data-go="s3">See the effect →</button>`;
   el.classList.add("on");
   clearTimeout(linkTimer);
   linkTimer = setTimeout(() => el.classList.remove("on"), 9000);
@@ -1108,7 +2141,7 @@ $("#profile").addEventListener("click", e => {
 });
 
 /* ============================================================
-   03 · PRICING CHART  (single axis, shaded gap band)
+   SECTION 03 — PRICING CHART
    ============================================================ */
 function renderPrice(){
   const m = priceModel(), p = m.p;
@@ -1118,39 +2151,39 @@ function renderPrice(){
   const Y = v => T + (1 - v) * (H - T - B);
   const path = f => m.xs.map((x,i) => `${i ? "L" : "M"}${X(x).toFixed(1)},${Y(f(x)).toFixed(1)}`).join("");
 
-  let s = `<rect width="${W}" height="${H}" fill="#070b12"/>`;
+  let s = `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
 
   /* gridlines */
   [0,.25,.5,.75,1].forEach(g => {
-    s += `<line x1="${L}" x2="${W-R}" y1="${Y(g)}" y2="${Y(g)}" stroke="#1c2535"/>`;
-    s += `<text x="${L-8}" y="${Y(g)+3}" text-anchor="end" font-family="JetBrains Mono" font-size="9" fill="#8793a8">${Math.round(g*100)}%</text>`;
+    s += `<line x1="${L}" x2="${W-R}" y1="${Y(g)}" y2="${Y(g)}" stroke="#e5e2da"/>`;
+    s += `<text x="${L-8}" y="${Y(g)+3}" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="#6b6b6b">${Math.round(g*100)}%</text>`;
   });
   [0.5,1,1.5].forEach(k => {
-    s += `<text x="${X(p.base*k)}" y="${H-B+18}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">${fmt(p.base*k)}</text>`;
+    s += `<text x="${X(p.base*k)}" y="${H-B+18}" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#6b6b6b">${fmt(p.base*k)}</text>`;
   });
 
-  /* the shaded "gap" band — the whole story in one rectangle */
+  /* gap band */
   const xa = Math.min(X(m.bestPop), X(m.bestYou));
   const xb = Math.max(X(m.bestPop), X(m.bestYou));
   if (xb - xa > 1.5){
-    s += `<rect x="${xa}" y="${T}" width="${xb-xa}" height="${H-T-B}" fill="rgba(54,232,255,.10)"/>`;
-    s += `<text x="${(xa+xb)/2}" y="${T-12}" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="10" fill="#36e8ff">the gap</text>`;
+    s += `<rect x="${xa}" y="${T}" width="${xb-xa}" height="${H-T-B}" fill="rgba(30,58,138,.09)"/>`;
+    s += `<text x="${(xa+xb)/2}" y="${T-10}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="10" fill="#1e3a8a" letter-spacing="1">GAP</text>`;
   }
 
-  /* demand curves */
-  s += `<path d="${path(m.dPop)}" fill="none" stroke="#8793a8" stroke-width="2"/>`;
-  s += `<path d="${path(m.dYou)}" fill="none" stroke="#36e8ff" stroke-width="2.5"/>`;
+  /* curves */
+  s += `<path d="${path(m.dPop)}" fill="none" stroke="#8a8a8a" stroke-width="2"/>`;
+  s += `<path d="${path(m.dYou)}" fill="none" stroke="#1e3a8a" stroke-width="2.5"/>`;
 
-  /* optima */
-  s += `<line x1="${X(m.bestPop)}" x2="${X(m.bestPop)}" y1="${T}" y2="${H-B}" stroke="#8793a8" stroke-dasharray="4 4"/>`;
-  s += `<line x1="${X(m.bestYou)}" x2="${X(m.bestYou)}" y1="${T}" y2="${H-B}" stroke="#36e8ff" stroke-width="2"/>`;
-  s += `<circle cx="${X(m.bestYou)}" cy="${Y(m.dYou(m.bestYou))}" r="6" fill="#36e8ff"/>`;
+  /* verticals */
+  s += `<line x1="${X(m.bestPop)}" x2="${X(m.bestPop)}" y1="${T}" y2="${H-B}" stroke="#8a8a8a" stroke-dasharray="4 4"/>`;
+  s += `<line x1="${X(m.bestYou)}" x2="${X(m.bestYou)}" y1="${T}" y2="${H-B}" stroke="#1e3a8a" stroke-width="2"/>`;
+  s += `<circle cx="${X(m.bestYou)}" cy="${Y(m.dYou(m.bestYou))}" r="5" fill="#1e3a8a"/>`;
 
-  s += `<text x="${X(m.bestPop)}" y="${H-B+34}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#8793a8">list ${fmt(m.bestPop)}</text>`;
-  s += `<text x="${X(m.bestYou)}" y="${H-B+34}" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="10" fill="#36e8ff">you ${fmt(m.bestYou)}</text>`;
+  s += `<text x="${X(m.bestPop)}" y="${H-B+36}" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#8a8a8a">List ${fmt(m.bestPop)}</text>`;
+  s += `<text x="${X(m.bestYou)}" y="${H-B+36}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="10" fill="#1e3a8a">You ${fmt(m.bestYou)}</text>`;
 
-  s += `<text x="${W/2}" y="${H-10}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">` +
-       `${p.invert ? "net price charged (sticker − aid)" : "price"} →   ·   y: probability you say yes</text>`;
+  s += `<text x="${W/2}" y="${H-10}" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#6b6b6b">` +
+       `${p.invert ? "Net price charged (sticker minus aid)" : "Price"}  ·  Y: probability of a yes</text>`;
 
   $("#psvg").innerHTML = s;
 
@@ -1161,27 +2194,27 @@ function renderPrice(){
     $("#oList").textContent = fmt(m.bestPop) + p.unit;
     $("#oListL").textContent = "Net price, average admit";
     $("#oYou").textContent = fmt(m.bestYou) + p.unit;
-    $("#oYouL").textContent = `Your net price · aid offered: ${fmt(Math.max(0, sticker*1.15 - m.bestYou))}`;
+    $("#oYouL").textContent = `Your net price · aid: ${fmt(Math.max(0, sticker*1.15 - m.bestYou))}`;
   } else {
     $("#oList").textContent = fmt(m.bestPop) + p.unit;
-    $("#oListL").textContent = "List price (no data)";
+    $("#oListL").textContent = "List price";
     $("#oYou").textContent = fmt(m.bestYou) + p.unit;
     $("#oYouL").textContent = "Your price";
   }
 
   const dl = $("#oDelta");
-  dl.textContent = (d >= 0 ? "+" : "") + d.toFixed(1) + "% vs. the average " + (p.invert ? "admitted student" : "customer") +
+  dl.textContent = (d >= 0 ? "+" : "") + d.toFixed(1) + "% versus the average " + (p.invert ? "admitted student" : "customer") +
     (m.n < 20 ? " · with almost no data the model cannot tell you apart" : "");
   dl.className = "delta " + (d > 0 ? "up" : "down");
   $("#hDelta").textContent = (d >= 0 ? "+" : "") + Math.round(d) + "%";
 
   $("#oNote").innerHTML = m.n < 20
-    ? `<b>No profile:</b> the model only knows the average ${p.invert ? "admit" : "customer"}, so everyone gets the same price. This is what a use restriction on purchased data would preserve.`
+    ? `<b>No profile.</b> The model only knows the average ${p.invert ? "admit" : "customer"}, so everyone gets the same price. This is what a use restriction on purchased data would preserve.`
     : (p.invert
-        ? `<b>Aid optimization is pricing.</b> The model does not ask what you need. It asks the smallest award at which you still enroll, then protects net tuition revenue.`
+        ? `<b>Aid optimization is pricing.</b> The model does not ask what you need. It finds the smallest award at which you still enroll, then protects net tuition revenue.`
         : `<b>The more it knows, the closer the price gets to the most you would pay.</b> The profile from section 02 is what moved the blue curve.`) +
       ($("#sCoord").checked && p.coord
-        ? ` <b>Pooling competitors' data</b> shifted the whole market up: that is the coordination theory in the RealPage cases, separate from personalization.`
+        ? ` <b>Pooling competitors' data</b> shifts the whole market up: that is the coordination theory in the RealPage cases, separate from personalization.`
         : "");
 
   const lv = v => v < 34 ? "low" : v < 67 ? "mid" : "high";
@@ -1207,15 +2240,14 @@ $("#psvg").addEventListener("mousemove", e => {
   if (!cross){
     cross = document.createElementNS("http://www.w3.org/2000/svg","line");
     cross.id = "xh";
-    cross.setAttribute("stroke","#eef2f8");
+    cross.setAttribute("stroke","#141414");
     cross.setAttribute("stroke-dasharray","2 3");
     cross.setAttribute("y1","30"); cross.setAttribute("y2","304");
     svg.appendChild(cross);
   }
   cross.setAttribute("x1", vx); cross.setAttribute("x2", vx);
   chartTip.innerHTML =
-    `at ${fmt(price)}${p.unit}<br><span style="color:#36e8ff">you: ${Math.round(py*100)}% yes</span>` +
-    `<br><span style="color:#8793a8">average: ${Math.round(pa*100)}% yes</span>`;
+    `At ${fmt(price)}${p.unit}<br>You: ${Math.round(py*100)}% yes<br>Average: ${Math.round(pa*100)}% yes`;
   chartTip.style.left = (e.clientX - r.left) + "px";
   chartTip.style.top  = (e.clientY - r.top) + "px";
   chartTip.style.transform = (e.clientX - r.left) > r.width*0.7 ? "translate(-100%,-130%)" : "translate(-50%,-130%)";
@@ -1237,26 +2269,27 @@ $("#presets").addEventListener("click", e => {
   const b = e.target.closest("button");
   if (!b) return;
   const k = +b.dataset.p;
+  $$("#presets button").forEach(x => x.classList.toggle("active", x === b));
   if (PRE[k]){
     $("#sN").value   = PRE[k][0];
     $("#sInc").value = PRE[k][1];
     $("#sUrg").value = PRE[k][2];
     $("#sAlt").value = PRE[k][3];
   } else {
-    renderProfile();  /* "From my profile" — pull the count from section 02 */
+    renderProfile();
   }
   renderPrice();
 });
 
 /* ============================================================
-   04 · INDUSTRIES
+   SECTION 04 — INDUSTRIES
    ============================================================ */
 const IND = [
   { n:"Housing",
     feeds:["court records","credit file","listing-site pixels","landlord lease data","competitors' lease data (alleged)"],
     out:"Rent recommendation · approve/deny",
     ev:[
-      ["alleged","Rents at 100,000+ MD apartments set via RealPage; up to $130/mo (pending)","https://www.marylandattorneygeneral.gov/press/2025/011525.pdf"],
+      ["alleged","Rents at 100,000+ Maryland apartments set via RealPage; up to $130/mo (pending)","https://www.marylandattorneygeneral.gov/press/2025/011525.pdf"],
       ["verified","TransUnion screening: inaccurate eviction records, $15M (FTC/CFPB 2023)","https://www.ftc.gov/news-events/news/press-releases/2023/10/ftc-cfpb-settlement-require-trans-union-pay-15-million-over-charges-it-failed-ensure-accuracy-tenant"],
       ["gap","One landlord pricing one tenant from her own data: no rule",null]
     ],
@@ -1265,8 +2298,8 @@ const IND = [
     feeds:["loyalty ID","app SDK location","site pixels","basket history","RTB bidstream"],
     out:"Audience segments for brands · personalized price",
     ev:[
-      ["verified","~75% of Instacart items at multiple prices; avg gap 13% (Dec. 2025 study)","https://ag.ny.gov/press-release/2026/attorney-general-james-demands-information-instacart-algorithmic-pricing"],
-      ["verified","MD HB 895 bars personal data to raise food prices (eff. Oct. 1, 2026)","https://www.gtlaw.com/en/insights/2026/5/maryland-enacts-food-sector-personalized-pricing-law"],
+      ["verified","~75% of Instacart items at multiple prices; average gap 13% (Dec. 2025 study)","https://ag.ny.gov/press-release/2026/attorney-general-james-demands-information-instacart-algorithmic-pricing"],
+      ["verified","Maryland HB 895 bars personal data to raise food prices (eff. Oct. 1, 2026)","https://www.gtlaw.com/en/insights/2026/5/maryland-enacts-food-sector-personalized-pricing-law"],
       ["gap","Every non-food category: no rule",null]
     ],
     law:"MD HB 895 · NY disclosure · FTC §5" },
@@ -1287,16 +2320,16 @@ const IKEY = { "Housing":"housing", "Grocery & retail":"retail", "Education":"ed
 function renderInd(){
   $("#ind3").innerHTML = IND.map(i => {
     const cur = IKEY[i.n] === mode;
-    return `<div class="card" data-m="${IKEY[i.n]}" data-cur="${cur ? 1 : 0}" tabindex="0" role="button" ` +
+    return `<div class="ind" data-m="${IKEY[i.n]}" data-cur="${cur ? 1 : 0}" tabindex="0" role="button" ` +
       `aria-label="Run the simulation in ${i.n} mode">` +
-      `<h3>${i.n}<span class="btn go">${cur ? "Running ✓" : "Run this ▸"}</span></h3>` +
-      `<div><span class="eyebrow">Feeds the profile</span><div class="chips" style="margin-top:4px">` +
+      `<h3>${i.n}<span class="go">${cur ? "Running" : "Run this"}</span></h3>` +
+      `<div><div class="sub-label">Feeds the profile</div><div class="chips">` +
         i.feeds.map(f => `<span class="chip">${f}</span>`).join("") + `</div></div>` +
-      `<div><span class="eyebrow">Model output</span><p style="font-weight:700;font-size:.86rem">${i.out}</p></div>` +
+      `<div><div class="sub-label">Model output</div><p class="out-line">${i.out}</p></div>` +
       `<div class="ev">` + i.ev.map(e =>
         `<div class="e"><span class="pill p-${e[0]}">${PL[e[0]]}</span><span>${e[1]}</span>` +
-        (e[2] ? `<a href="${e[2]}" target="_blank" rel="noopener">source ↗</a>` : "") + `</div>`).join("") + `</div>` +
-      `<div><span class="eyebrow">Law</span><p class="mono" style="font-size:.7rem;color:var(--muted)">${i.law}</p></div></div>`;
+        (e[2] ? `<a href="${e[2]}" target="_blank" rel="noopener">Read source →</a>` : "") + `</div>`).join("") + `</div>` +
+      `<div class="law"><span class="sub-label">Applicable law</span>${i.law}</div></div>`;
   }).join("");
 }
 
@@ -1309,7 +2342,6 @@ function setMode(k){
   $$("#seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === k)));
 
   $("#s1Title").textContent = m.s1;
-  $("#s1Sub").textContent   = m.s1sub;
   $("#url").textContent     = m.url;
   $("#lInc").textContent    = m.price.inc;
   $("#lUrg").textContent    = m.price.urg;
@@ -1318,14 +2350,14 @@ function setMode(k){
   $("#sCoord").checked = false;
 
   $("#s3Title").textContent = k === "education"
-    ? "How an algorithm turns the profile into your aid letter"
-    : `How an algorithm turns the profile into ${m.price.label}`;
+    ? "How a profile sets your aid letter"
+    : `How a profile sets ${m.price.label === "a product you buy online" ? "a price" : "your price"}`;
 
   $("#howto").innerHTML = k === "education"
-    ? "In education the 'price' is net tuition after aid. The vendor's model estimates ability to pay from purchased data, then finds the award that maximizes enrollment × revenue. Slide 'ability to pay' up and watch the aid shrink."
+    ? "Here the 'price' is net tuition after aid. The vendor's model estimates ability to pay from purchased data, then finds the award that maximizes enrollment revenue. Move 'ability to pay' up and watch the aid shrink."
     : k === "housing"
-      ? "Two separate mechanisms: personalization (the sliders) and coordination (the checkbox). The lawsuits are about the second. Nothing currently regulates the first."
-      : "Slide 'data points' from 0 to 250 first. Then change what the data says about you.";
+      ? "Two separate mechanisms: personalization (the sliders) and coordination (the checkbox). The lawsuits concern the second. Nothing currently regulates the first."
+      : "Start with the data-points slider at 0, then move it to 250. Then change what the data says about you.";
 
   if (k === "education" && !on.has("test")) on.add("test");
   if (k !== "education" && on.has("test")) on.delete("test");
@@ -1345,21 +2377,21 @@ $("#seg").addEventListener("click", e => {
 
 $("#ind3").addEventListener("click", e => {
   if (e.target.closest("a")) return;
-  const c = e.target.closest(".card[data-m]");
+  const c = e.target.closest(".ind[data-m]");
   if (!c) return;
   setMode(c.dataset.m);
   document.getElementById("s1").scrollIntoView({ behavior: RM ? "auto" : "smooth" });
 });
 $("#ind3").addEventListener("keydown", e => {
   if (e.key !== "Enter" && e.key !== " ") return;
-  const c = e.target.closest(".card[data-m]");
+  const c = e.target.closest(".ind[data-m]");
   if (!c) return;
   e.preventDefault();
   c.click();
 });
 
 /* ============================================================
-   NAVIGATION · PROGRESS · REVEALS
+   NAV · PROGRESS · REVEALS
    ============================================================ */
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-go]");
@@ -1369,11 +2401,10 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => {
   if (e.key !== "Enter" && e.key !== " ") return;
-  const g = e.target.closest(".stat[data-go]");
+  const g = e.target.closest(".fig[data-go]");
   if (g){ e.preventDefault(); g.click(); }
 });
 
-/* reading progress bar */
 const progress = $("#progress");
 let pTick = false;
 function onScroll(){
@@ -1389,43 +2420,41 @@ function onScroll(){
 window.addEventListener("scroll", onScroll, { passive:true });
 onScroll();
 
-/* section reveals */
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("in"); });
 }, { rootMargin: "0px 0px -12% 0px" });
 $$(".reveal").forEach(el => revealObs.observe(el));
 
-/* nav current-section highlight */
 const navObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (!e.isIntersecting) return;
-    $$(".nav a").forEach(a => a.setAttribute("aria-current", String(a.dataset.sec === e.target.id)));
+    const id = e.target.id;
+    $$(".navbar .links a, .masthead .nav a").forEach(a =>
+      a.setAttribute("aria-current", String(a.dataset.sec === id)));
   });
 }, { rootMargin: "-40% 0px -55% 0px" });
 ["s1","s2","s3","s4"].forEach(id => { const el = document.getElementById(id); if (el) navObs.observe(el); });
 
 /* ============================================================
-   BOOT — preview stats, then init
+   BOOT
    ============================================================ */
 function previewStats(){
-  /* Run the default simulation headlessly so the hero numbers are real, not invented. */
   const p = reqPlan();
   let co = 0;
   const fields = new Set();
   p.forEach(r => { co += 1 + (r.fan || 0); r.f.forEach(f => fields.add(f)); });
-
   const md = computeModel(Math.min(250, fields.size * 18), 0.5, 0.5, 0.7, false, mode);
   const delta = Math.round((md.bestYou - md.bestPop)/md.bestPop*100);
   return { co, fields: fields.size, delta };
 }
 
 function animateStat(el, to, suffix){
-  if (RM){ el.textContent = (suffix || "") + to; return; }
+  if (RM){ el.textContent = (suffix && to >= 0 ? "+" : "") + to + (suffix || ""); return; }
   const dur = 900, start = performance.now();
   (function step(t){
     const k = Math.min(1, (t - start)/dur);
     const e = 1 - Math.pow(1 - k, 3);
-    el.textContent = (suffix && to >= 0 ? "+" : "") + Math.round(to * e) + (suffix ? "%" : "");
+    el.textContent = (suffix && to >= 0 ? "+" : "") + Math.round(to * e) + (suffix || "");
     if (k < 1) requestAnimationFrame(step);
   })(performance.now());
 }
@@ -1434,12 +2463,15 @@ function boot(){
   renderInd();
   setMode("general");
 
+  /* mark the "no data" preset as active on load */
+  $$("#presets button")[0].classList.add("active");
+
   const pv = previewStats();
-  animateStat($("#hCompanies"), pv.co);
-  animateStat($("#hFields"),    pv.fields);
+  animateStat($("#hCompanies"), pv.co, "");
+  animateStat($("#hFields"),    pv.fields, "");
   animateStat($("#hDelta"),     pv.delta, "%");
 
-  /* If the reader lands mid-page (deep link), fire the sim up to the visible step. */
+  /* deep-link handling */
   const visible = $$(".step.in");
   if (visible.length){
     const stage = +visible[visible.length - 1].dataset.stage;
