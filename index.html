@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
 /* ============================================================
-   TOKENS — newspaper palette
+   TOKENS
    ============================================================ */
 :root{
   --paper:#fbfaf6;
@@ -66,7 +66,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 :focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
 
 /* ============================================================
-   KICKERS, META, RULES
+   KICKERS, META
    ============================================================ */
 .kicker{
   font-family:var(--sans);
@@ -77,12 +77,6 @@ button{cursor:pointer;background:none;border:0;padding:0}
   color:var(--muted);
 }
 .kicker.ink{color:var(--ink)}
-.byline{
-  font-family:var(--sans);
-  font-size:.78rem;
-  color:var(--muted);
-  letter-spacing:.02em;
-}
 .deck{
   font-family:var(--serif);
   font-size:clamp(1.05rem,1.6vw,1.28rem);
@@ -92,15 +86,8 @@ button{cursor:pointer;background:none;border:0;padding:0}
   max-width:64ch;
 }
 .rule{height:1px;background:var(--rule);border:0;margin:0}
-.rule-ink{height:1px;background:var(--ink);border:0;margin:0}
-.rule-double{
-  border:0;height:5px;margin:0;
-  border-top:1px solid var(--ink);
-  border-bottom:1px solid var(--ink);
-}
 .mono{font-family:var(--mono);font-size:.85em}
 .small{font-size:.85rem}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* ============================================================
    PROGRESS
@@ -121,7 +108,6 @@ button{cursor:pointer;background:none;border:0;padding:0}
   justify-content:space-between;
   gap:20px;
   flex-wrap:wrap;
-  margin-bottom:0;
 }
 .masthead .title{
   font-family:var(--serif);
@@ -130,11 +116,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
   letter-spacing:-.01em;
   color:var(--ink);
 }
-.masthead .nav{
-  display:flex;
-  gap:22px;
-  flex-wrap:wrap;
-}
+.masthead .nav{display:flex;gap:22px;flex-wrap:wrap}
 .masthead .nav a{
   font-family:var(--sans);
   font-size:.78rem;
@@ -172,12 +154,11 @@ button{cursor:pointer;background:none;border:0;padding:0}
   border:0;
   padding-bottom:2px;
   border-bottom:1px solid transparent;
-  letter-spacing:.01em;
 }
 .navbar .links a:hover{color:var(--ink)}
 .navbar .links a[aria-current="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 
-.modes{display:flex;gap:0;border:1px solid var(--rule);border-radius:2px;overflow:hidden;background:#fff}
+.modes{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden;background:#fff}
 .modes button{
   font-family:var(--sans);
   font-size:.76rem;
@@ -289,7 +270,6 @@ section.block:last-of-type{border-bottom:0}
   font-variant-numeric:tabular-nums;
 }
 .section-head .txt{display:grid;gap:8px;max-width:70ch}
-.section-head .kicker{margin-bottom:2px}
 .section-head h2{margin:4px 0 6px;max-width:22ch}
 .section-head p{color:var(--ink-2);font-size:1rem;line-height:1.55;max-width:62ch;margin:0}
 @media (max-width:640px){
@@ -298,7 +278,7 @@ section.block:last-of-type{border-bottom:0}
 }
 
 /* ============================================================
-   SCROLLYTELLING — section 01
+   SCENARIO STRIP
    ============================================================ */
 .scenario{
   border-top:1px solid var(--rule);
@@ -314,6 +294,9 @@ section.block:last-of-type{border-bottom:0}
 .scenario .togs{display:grid;gap:6px;grid-column:1/-1}
 .scenario .note{grid-column:1/-1;font-size:.82rem;color:var(--muted);font-family:var(--sans);margin:0;line-height:1.5}
 
+/* ============================================================
+   SCROLLYTELLING
+   ============================================================ */
 .scrolly{
   display:grid;
   grid-template-columns:minmax(0,380px) minmax(0,1fr);
@@ -362,16 +345,16 @@ section.block:last-of-type{border-bottom:0}
   font-weight:500;
 }
 
-/* sticky visual column */
+/* --- sticky visual column --- */
 .scrolly .sticky{
   position:sticky;
   top:72px;
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:10px;
   height:calc(100vh - 96px);
-  max-height:860px;
-  min-height:560px;
+  max-height:920px;
+  min-height:620px;
 }
 .scrolly .sticky .visual-title{
   font-family:var(--sans);
@@ -382,17 +365,43 @@ section.block:last-of-type{border-bottom:0}
   font-weight:600;
   padding-bottom:6px;
   border-bottom:1px solid var(--ink);
+  flex:0 0 auto;
 }
 
+/* Browser mock shrinks */
+.scrolly .sticky .browser{
+  flex:0 0 auto;
+  max-height:88px;
+  overflow:hidden;
+}
+.scrolly .sticky .browser .page{padding:6px;min-height:0;gap:4px}
+.scrolly .sticky .browser .page .ph{height:5px}
+.scrolly .sticky .browser .adslot{height:20px;font-size:.55rem;letter-spacing:.1em}
+.scrolly .sticky .browser .page .hint{font-size:.55rem;bottom:4px;right:8px}
+
+/* Canvas gets the room */
+.scrolly .sticky .net{
+  flex:1 1 auto;
+  min-height:420px;
+}
+
+/* Log stays compact */
+.scrolly .sticky .logcard{
+  flex:0 0 auto;
+  padding:8px 12px;
+  gap:6px;
+}
+.scrolly .sticky .log{max-height:110px}
+.scrolly .sticky .payload{max-height:120px;font-size:.68rem}
+
 /* ============================================================
-   BROWSER MOCK
+   BROWSER MOCK (base)
    ============================================================ */
 .browser{
   border:1px solid var(--rule);
   border-radius:2px;
   overflow:hidden;
   background:#fff;
-  flex:0 0 auto;
 }
 .browser .bar{
   display:flex;gap:6px;align-items:center;
@@ -461,8 +470,6 @@ section.block:last-of-type{border-bottom:0}
   border:1px solid var(--rule);
   border-radius:2px;
   overflow:hidden;
-  flex:1 1 auto;
-  min-height:280px;
 }
 .net canvas{display:block;width:100%;height:100%;cursor:crosshair}
 .net .hud{
@@ -522,14 +529,11 @@ section.block:last-of-type{border-bottom:0}
    LOG
    ============================================================ */
 .logcard{
-  flex:0 0 auto;
   display:flex;
   flex-direction:column;
-  gap:10px;
   background:#fff;
   border:1px solid var(--rule);
   border-radius:2px;
-  padding:12px 14px;
 }
 .logcard h4{
   font-family:var(--sans);
@@ -558,8 +562,6 @@ section.block:last-of-type{border-bottom:0}
   display:grid;
   gap:0;
   overflow:auto;
-  max-height:150px;
-  margin:0 -4px;
 }
 .req{
   display:grid;
@@ -631,7 +633,6 @@ section.block:last-of-type{border-bottom:0}
   border-radius:2px;
   padding:12px 14px;
   overflow:auto;
-  max-height:170px;
   line-height:1.65;
   white-space:pre-wrap;
   word-break:break-word;
@@ -691,7 +692,7 @@ section.block:last-of-type{border-bottom:0}
 }
 
 /* ============================================================
-   PROFILE / SOURCES  (section 02)
+   PROFILE / SOURCES
    ============================================================ */
 .grid-02{
   display:grid;
@@ -852,7 +853,7 @@ section.block:last-of-type{border-bottom:0}
 .linknote b{color:var(--ink);font-weight:600}
 
 /* ============================================================
-   PRICING  (section 03)
+   PRICING
    ============================================================ */
 .grid-03{
   display:grid;
@@ -864,7 +865,6 @@ section.block:last-of-type{border-bottom:0}
 
 .presets{
   display:flex;
-  gap:0;
   flex-wrap:wrap;
   border:1px solid var(--rule);
   border-radius:2px;
@@ -905,7 +905,6 @@ section.block:last-of-type{border-bottom:0}
   font-size:.78rem;
   font-weight:600;
   color:var(--ink);
-  letter-spacing:0;
 }
 .sl input[type=range]{
   width:100%;
@@ -997,7 +996,7 @@ section.block:last-of-type{border-bottom:0}
 }
 
 /* ============================================================
-   INDUSTRIES (section 04)
+   INDUSTRIES
    ============================================================ */
 .ind3{
   display:grid;
@@ -1021,7 +1020,7 @@ section.block:last-of-type{border-bottom:0}
   .ind:last-child{border-bottom:0}
 }
 .ind:hover{background:var(--paper-2)}
-.ind[data-cur="1"]{background:var(--paper-2);box-shadow:inset 0 0 0 0}
+.ind[data-cur="1"]{background:var(--paper-2)}
 .ind h3{
   font-family:var(--serif);
   font-size:1.35rem;
@@ -1548,25 +1547,21 @@ const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const MODES = {
   general:{ name:"General", url:"news-example.com/article",
     s1:"Reading a free article",
-    s1sub:"An ad-supported article. Nothing is purchased; the page itself is the transaction.",
     price:{ base:60, unit:"", label:"a product you buy online",
       inc:"Estimated household income", urg:"Urgency signal (visits, cart, searches)",
       alt:"Alternatives you could choose", coord:false, invert:false }},
   housing:{ name:"Housing", url:"apartments-example.com/baltimore/2br",
     s1:"Searching for an apartment",
-    s1sub:"A listing site. The search itself is a signal: in-market, budget range, neighborhood.",
     price:{ base:1800, unit:"/mo", label:"monthly rent",
       inc:"Estimated household income", urg:"Urgency (saved listings, repeat visits, move-in date)",
       alt:"Vacant units nearby you could choose", coord:true, invert:false }},
   retail:{ name:"Grocery", url:"grocery-example.com/cart",
     s1:"Opening a grocery app",
-    s1sub:"A loyalty ID ties this session to every basket you have ever scanned.",
     price:{ base:62, unit:"", label:"a weekly basket",
       inc:"Estimated household income", urg:"Urgency (low stock at home, delivery window)",
       alt:"Other stores within reach", coord:false, invert:false }},
   education:{ name:"Education", url:"college-example.edu/apply",
     s1:"Visiting a college website at 16",
-    s1sub:"Recruitment tracking starts years before any application. No purchase, no FAFSA, no relationship yet.",
     price:{ base:45000, unit:"/yr", label:"net tuition after aid",
       inc:"Estimated ability to pay (purchased household data)", urg:"Enrollment likelihood (engagement, geography, program)",
       alt:"Competing offers you are likely to hold", coord:false, invert:true }}
@@ -1707,25 +1702,33 @@ function sizeCanvas(){
 }
 if (window.ResizeObserver) new ResizeObserver(() => { sizeCanvas(); if (!playing) drawNet(performance.now()); }).observe($("#net"));
 
-/* Node colors, chosen for paper background */
+/* Node colors */
 const COL = { fp:"#1f2937", tp:"#1e3a8a", bid:"#b45309", fpr:"#7f1d1d" };
 
 function addNode(label, c, ring, parent){
   const n = { label, c, ring, parent, x:0, y:0, born:performance.now() };
   const cx = W/2, cy = H/2;
-  const r = ring === 0 ? 0 : ring === 1 ? Math.min(W,H)*.28 : Math.min(W,H)*.45;
-  if (ring === 0){ n.x = cx; n.y = cy; }
-  else if (ring === 1){
-    const k = nodes.filter(m => m.ring === ring).length;
-    const a = -Math.PI/2 + k*0.78;
-    n.x = cx + Math.cos(a)*r;
-    n.y = cy + Math.sin(a)*r;
+  const R1 = Math.min(W, H) * 0.30;
+  const R2 = Math.min(W, H) * 0.46;
+
+  if (ring === 0){
+    n.x = cx; n.y = cy;
+  } else if (ring === 1){
+    /* Spread ring-1 nodes evenly around the full circle (total planned = 12) */
+    const k = nodes.filter(m => m.ring === 1).length;
+    const total = 12;
+    const a = -Math.PI/2 + k * (2*Math.PI / total);
+    n.x = cx + Math.cos(a) * R1;
+    n.y = cy + Math.sin(a) * R1;
   } else {
-    const k = nodes.filter(m => m.ring === ring).length;
-    const total = 24;
-    const a = -Math.PI/2 + k*(2*Math.PI/total) + 0.4;
-    n.x = cx + Math.cos(a)*r;
-    n.y = cy + Math.sin(a)*r;
+    /* Ring-2 bidders cluster tightly around their parent exchange */
+    const siblings = nodes.filter(m => m.ring === 2 && m.parent === parent);
+    const k = siblings.length;
+    const parentAngle = Math.atan2(parent.y - cy, parent.x - cx);
+    const spread = 0.16;
+    const a = parentAngle + (k - 1) * spread;
+    n.x = cx + Math.cos(a) * R2;
+    n.y = cy + Math.sin(a) * R2;
   }
   nodes.push(n);
   return n;
@@ -1735,15 +1738,6 @@ function drawNet(now){
   if (!W || !H) return;
   ctx.clearRect(0,0,W,H);
   const dp = devicePixelRatio;
-
-  /* ring guides */
-  ctx.strokeStyle = "rgba(20,20,20,.08)";
-  ctx.lineWidth = 1*dp;
-  [0.28, 0.45].forEach(frac => {
-    ctx.beginPath();
-    ctx.arc(W/2, H/2, Math.min(W,H)*frac, 0, 7);
-    ctx.stroke();
-  });
 
   /* edges */
   nodes.forEach(n => {
@@ -1772,35 +1766,53 @@ function drawNet(now){
 
   /* nodes */
   nodes.forEach(n => {
+    /* selection ring */
     if (selReq !== null && n.req === selReq){
       ctx.strokeStyle = "#141414";
       ctx.lineWidth = 2*dp;
       ctx.beginPath();
-      ctx.arc(n.x, n.y, (n.ring === 2 ? 8 : 14)*dp, 0, 7);
+      ctx.arc(n.x, n.y, (n.ring === 2 ? 9 : 18)*dp, 0, 7);
       ctx.stroke();
     }
+
     const age = RM ? 1 : Math.min(1, (now - n.born)/300);
-    const baseR = n.ring === 0 ? 18 : n.ring === 1 ? 7 : 3.5;
-    const rr = baseR * dp * (0.55 + 0.45*age);
+    const baseR = n.ring === 0 ? 22 : n.ring === 1 ? 10 : 4;
+    const rr = baseR * dp * (0.55 + 0.45 * age);
+
     ctx.fillStyle = n.ring === 0 ? "#141414" : COL[n.c];
     ctx.beginPath();
     ctx.arc(n.x, n.y, rr, 0, 7);
     ctx.fill();
 
-    /* labels */
-    if (n.ring < 2){
-      ctx.fillStyle = "#141414";
-      ctx.font = `600 ${(n.ring === 0 ? 11 : 9)*dp}px Inter, sans-serif`;
+    /* Center "YOU" label */
+    if (n.ring === 0){
+      ctx.fillStyle = "#fbfaf6";
+      ctx.font = `700 ${10*dp}px Inter, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(n.label, n.x, n.y + (n.ring === 0 ? 32 : 18)*dp);
+      ctx.fillText("YOU", n.x, n.y + 3*dp);
+      return;
+    }
+
+    /* Ring-1 labels placed outward from center */
+    if (n.ring === 1){
+      const ang = Math.atan2(n.y - H/2, n.x - W/2);
+      const lx = n.x + Math.cos(ang) * 26*dp;
+      const ly = n.y + Math.sin(ang) * 26*dp;
+      const rightSide = Math.cos(ang) >= 0;
+      ctx.textAlign = rightSide ? "left" : "right";
+
+      ctx.fillStyle = "#141414";
+      ctx.font = `600 ${12*dp}px Inter, sans-serif`;
+      ctx.fillText(n.label, lx, ly + 4*dp);
+
+      /* Bidder count on exchange nodes */
+      if (n.fanCount){
+        ctx.fillStyle = "#b45309";
+        ctx.font = `600 ${10*dp}px Inter, sans-serif`;
+        ctx.fillText("→ " + n.fanCount + " bidders", lx, ly + 18*dp);
+      }
     }
   });
-
-  /* center label */
-  ctx.fillStyle = "#fbfaf6";
-  ctx.font = `700 ${9*dp}px Inter, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.fillText("YOU", W/2, H/2 + 3*dp);
 }
 
 function tick(now){
@@ -1827,17 +1839,14 @@ function fire(r, i){
   packets.push({ a:you, b:n, t:performance.now(), d: RM ? 0 : 420, c:r.c });
 
   if (r.fan){
-    const shown = Math.min(r.fan, 7);
     companies += r.fan;
     bidders   += r.fan;
-    for (let k=0; k<shown; k++){
-      const b = addNode("Bidder "+(k+1), r.c, 2, n);
+    n.fanCount = r.fan;
+    /* 3 representative bidder dots per exchange */
+    for (let k = 0; k < 3; k++){
+      const b = addNode("", r.c, 2, n);
       b.req = i;
-      packets.push({ a:n, b, t:performance.now()+60+k*25, d: RM ? 0 : 380, c:"bid" });
-    }
-    if (r.fan > shown){
-      const b = addNode("+"+(r.fan - shown)+" more", r.c, 2, n);
-      b.req = i;
+      packets.push({ a:n, b, t:performance.now()+60+k*40, d: RM ? 0 : 420, c:"bid" });
     }
   }
 
@@ -2153,7 +2162,6 @@ function renderPrice(){
 
   let s = `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
 
-  /* gridlines */
   [0,.25,.5,.75,1].forEach(g => {
     s += `<line x1="${L}" x2="${W-R}" y1="${Y(g)}" y2="${Y(g)}" stroke="#e5e2da"/>`;
     s += `<text x="${L-8}" y="${Y(g)+3}" text-anchor="end" font-family="Inter, sans-serif" font-size="10" fill="#6b6b6b">${Math.round(g*100)}%</text>`;
@@ -2162,7 +2170,6 @@ function renderPrice(){
     s += `<text x="${X(p.base*k)}" y="${H-B+18}" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#6b6b6b">${fmt(p.base*k)}</text>`;
   });
 
-  /* gap band */
   const xa = Math.min(X(m.bestPop), X(m.bestYou));
   const xb = Math.max(X(m.bestPop), X(m.bestYou));
   if (xb - xa > 1.5){
@@ -2170,11 +2177,9 @@ function renderPrice(){
     s += `<text x="${(xa+xb)/2}" y="${T-10}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="10" fill="#1e3a8a" letter-spacing="1">GAP</text>`;
   }
 
-  /* curves */
   s += `<path d="${path(m.dPop)}" fill="none" stroke="#8a8a8a" stroke-width="2"/>`;
   s += `<path d="${path(m.dYou)}" fill="none" stroke="#1e3a8a" stroke-width="2.5"/>`;
 
-  /* verticals */
   s += `<line x1="${X(m.bestPop)}" x2="${X(m.bestPop)}" y1="${T}" y2="${H-B}" stroke="#8a8a8a" stroke-dasharray="4 4"/>`;
   s += `<line x1="${X(m.bestYou)}" x2="${X(m.bestYou)}" y1="${T}" y2="${H-B}" stroke="#1e3a8a" stroke-width="2"/>`;
   s += `<circle cx="${X(m.bestYou)}" cy="${Y(m.dYou(m.bestYou))}" r="5" fill="#1e3a8a"/>`;
@@ -2187,7 +2192,6 @@ function renderPrice(){
 
   $("#psvg").innerHTML = s;
 
-  /* outputs */
   const d = (m.bestYou - m.bestPop)/m.bestPop*100;
   if (p.invert){
     const sticker = p.base;
@@ -2463,7 +2467,6 @@ function boot(){
   renderInd();
   setMode("general");
 
-  /* mark the "no data" preset as active on load */
   $$("#presets button")[0].classList.add("active");
 
   const pv = previewStats();
@@ -2471,7 +2474,6 @@ function boot(){
   animateStat($("#hFields"),    pv.fields, "");
   animateStat($("#hDelta"),     pv.delta, "%");
 
-  /* deep-link handling */
   const visible = $$(".step.in");
   if (visible.length){
     const stage = +visible[visible.length - 1].dataset.stage;
