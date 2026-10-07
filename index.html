@@ -3,189 +3,287 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>[hidden]{display:none!important}img{max-width:100%}body{margin:0}</style>
 <title>Where Your Data Goes</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Manrope:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-/* Committed dark "instrument panel" look. Three live simulations stacked (page load → profile → price), industries re-skin all three. */
+/* Dark "instrument panel" — cyan is reserved exclusively for third-party data. */
 :root{
-  --bg:#07090f; --panel:#0e131d; --panel-2:#141b28; --ink:#eef2f8; --muted:#8793a8; --line:#223047; --line-2:#2f4160;
-  --flow:#36e8ff; --flow-dim:rgba(54,232,255,.18); --flow-glow:0 0 18px rgba(54,232,255,.55);
+  --bg:#07090f; --panel:#0e131d; --panel-2:#141b28; --ink:#eef2f8; --muted:#8793a8;
+  --line:#223047; --line-2:#2f4160;
+  --flow:#36e8ff; --flow-dim:rgba(54,232,255,.16);
   --person:#7b96ff; --ok:#33e6a3; --warn:#ffb13b; --bad:#ff4f63;
-  --display:"Unbounded",ui-sans-serif,system-ui,sans-serif; --body:"Manrope",ui-sans-serif,system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --display:"Unbounded",ui-sans-serif,system-ui,sans-serif;
+  --body:"Manrope",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
   color-scheme:dark; box-sizing:border-box;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;background-image:radial-gradient(1200px 500px at 20% -10%,rgba(54,232,255,.08),transparent 60%),radial-gradient(900px 400px at 100% 10%,rgba(123,150,255,.07),transparent 60%)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  background-image:radial-gradient(1200px 500px at 20% -10%,rgba(54,232,255,.06),transparent 60%),
+                   radial-gradient(900px 400px at 100% 10%,rgba(123,150,255,.05),transparent 60%);}
 .wrap{max-width:1240px;margin:0 auto;padding-inline:18px;padding-block:18px 90px}
 h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
 h1{font-size:clamp(1.6rem,4.4vw,3rem);font-weight:800;line-height:1.05}
-h2{font-size:clamp(1.1rem,2.2vw,1.5rem);font-weight:800}
-h3{font-size:.9rem;font-weight:700}
+h2{font-size:clamp(1.15rem,2.4vw,1.7rem);font-weight:800}
+h3{font-size:.92rem;font-weight:700}
 p{margin:0}
 button,input{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
 .mono{font-family:var(--mono)}
-.eyebrow{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--flow);font-weight:700}
+
+/* --- reading progress --- */
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--ink);opacity:.7;z-index:60;pointer-events:none}
+
+/* --- typography helpers --- */
+.eyebrow{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .sub{color:var(--muted);max-width:66ch}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-/* nav */
-.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:space-between;background:rgba(7,9,15,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin:0 -18px 22px;padding:10px 18px}
-.nav .links{display:flex;gap:4px;flex-wrap:wrap}
-.nav a{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:6px}
+/* --- nav --- */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:6px;flex-wrap:wrap;
+  align-items:center;justify-content:space-between;background:rgba(7,9,15,.88);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);margin:0 -18px 22px;padding:10px 18px}
+.nav .links{display:flex;gap:2px;flex-wrap:wrap}
+.nav a{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+  text-decoration:none;padding:6px 10px;border-radius:6px;transition:color .15s,background .15s}
 .nav a:hover{color:var(--ink);background:var(--panel-2)}
+.nav a[aria-current="true"]{color:var(--ink);background:var(--panel-2)}
 .seg{display:flex;gap:3px;padding:3px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px}
-.seg button{border:0;background:transparent;padding:6px 11px;border-radius:6px;cursor:pointer;font-family:var(--display);font-weight:700;font-size:.7rem;color:var(--muted);letter-spacing:.02em}
-.seg button[aria-pressed="true"]{background:var(--flow);color:#04141a}
+.seg button{border:0;background:transparent;padding:6px 11px;border-radius:6px;cursor:pointer;
+  font-family:var(--display);font-weight:700;font-size:.7rem;color:var(--muted);letter-spacing:.02em}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
-/* hero */
+/* --- hero --- */
 .hero{display:grid;gap:14px;margin-bottom:34px}
-.hero .big{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}
-.stat{display:grid;gap:2px}
-.stat .v{font-family:var(--mono);font-size:clamp(1.8rem,5vw,3rem);font-weight:700;line-height:1;color:var(--flow);text-shadow:var(--flow-glow);font-variant-numeric:tabular-nums}
+.hero .big{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-end}
+.stat{display:grid;gap:2px;cursor:pointer;border-radius:8px;padding:6px 10px;margin:-6px -10px;transition:background .15s;background:transparent;border:0;text-align:left}
+.stat:hover{background:var(--panel-2)}
+.stat .v{font-family:var(--mono);font-size:clamp(1.8rem,5vw,3rem);font-weight:700;line-height:1;
+  color:var(--ink);font-variant-numeric:tabular-nums;transition:text-shadow .4s}
+.stat.pulse .v{text-shadow:0 0 20px rgba(238,242,248,.5)}
 .stat .l{font-size:.78rem;color:var(--muted)}
+.stat .l::after{content:" ↓";color:var(--muted)}
 
-/* section shell */
-section.block{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:18px;margin-bottom:26px;display:grid;gap:14px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+/* --- section shell --- */
+section.block{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:20px;
+  margin-bottom:26px;display:grid;gap:16px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
 .head{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start}
-.head .num{font-family:var(--display);font-size:2.2rem;font-weight:800;color:var(--line-2);line-height:1}
+.head .num{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--muted);line-height:1;letter-spacing:.1em}
 .grid3{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) minmax(0,.9fr);gap:14px;align-items:start}
 @media (max-width:960px){.grid3{grid-template-columns:1fr}}
 .card{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px;min-width:0}
 .card h3{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.btn{border:1px solid var(--line-2);background:var(--panel);border-radius:6px;padding:8px 12px;cursor:pointer;font-family:var(--display);font-size:.72rem;font-weight:700;letter-spacing:.03em}
-.btn.primary{background:var(--flow);color:#04141a;border-color:var(--flow);box-shadow:var(--flow-glow)}
-.btn:disabled{opacity:.45;cursor:default;box-shadow:none}
-.tog{display:flex;align-items:center;gap:8px;font-size:.82rem;cursor:pointer;user-select:none}
-.tog input{accent-color:var(--flow);width:16px;height:16px}
 
-/* mock browser */
+/* --- buttons --- */
+.btn{border:1px solid var(--line-2);background:var(--panel);border-radius:6px;padding:8px 13px;cursor:pointer;
+  font-family:var(--display);font-size:.72rem;font-weight:700;letter-spacing:.03em;transition:background .15s,color .15s,border-color .15s}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{background:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* --- toggles --- */
+.tog{display:flex;align-items:center;gap:8px;font-size:.82rem;cursor:pointer;user-select:none}
+.tog input{accent-color:var(--ink);width:16px;height:16px}
+
+/* --- mock browser --- */
 .browser{border:1px solid var(--line-2);border-radius:8px;overflow:hidden;background:#0a0e16}
 .browser .bar{display:flex;gap:6px;align-items:center;padding:7px 9px;background:var(--panel);border-bottom:1px solid var(--line)}
 .browser .bar i{width:9px;height:9px;border-radius:50%;background:var(--line-2);display:inline-block}
-.browser .url{flex:1;font-family:var(--mono);font-size:.7rem;color:var(--muted);background:var(--panel-2);border-radius:4px;padding:4px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.browser .page{padding:12px;display:grid;gap:8px;min-height:150px}
-.ph{background:var(--panel-2);border-radius:4px;height:10px}
+.browser .url{flex:1;font-family:var(--mono);font-size:.7rem;color:var(--muted);background:var(--panel-2);
+  border-radius:4px;padding:4px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.browser .page{padding:12px;display:grid;gap:8px;cursor:pointer;position:relative;min-height:130px}
+.browser .page:hover{background:#0c121c}
+.ph{background:var(--panel-2);border-radius:4px;height:9px}
 .ph.w1{width:55%}.ph.w2{width:85%}.ph.w3{width:70%}
-.adslot{border:1px dashed var(--line-2);border-radius:4px;height:46px;display:grid;place-items:center;font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.1em}
+.adslot{border:1px dashed var(--line-2);border-radius:4px;height:38px;display:grid;place-items:center;
+  font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.1em;transition:all .4s}
 .adslot.filled{border-style:solid;border-color:var(--flow);color:var(--flow);background:var(--flow-dim)}
+.page .hint{position:absolute;inset:auto 10px 8px auto;font-family:var(--mono);font-size:.6rem;color:var(--muted)}
 
-/* network canvas */
-.net{position:relative;background:#070b12;border:1px solid var(--line);border-radius:8px;overflow:hidden;aspect-ratio:4/3;max-width:100%}
-.net canvas{display:block;width:100%;height:100%}
-.net .hud{position:absolute;left:10px;top:10px;display:flex;gap:8px;flex-wrap:wrap}
-.hud .k{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;background:rgba(7,9,15,.7);border:1px solid var(--line);border-radius:5px;padding:4px 8px;color:var(--muted)}
-.hud .k b{color:var(--flow);font-size:.9rem;display:block;font-variant-numeric:tabular-nums}
-.net .tline{position:absolute;right:10px;top:10px;font-family:var(--mono);font-size:.64rem;color:var(--muted);background:rgba(7,9,15,.7);border:1px solid var(--line);border-radius:5px;padding:4px 8px}
+/* --- network canvas --- */
+.net{position:relative;background:#070b12;border:1px solid var(--line);border-radius:8px;overflow:hidden;min-height:200px}
+.net canvas{display:block;width:100%;height:100%;cursor:crosshair}
+.net .hud{position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.hud .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;background:rgba(7,9,15,.75);
+  border:1px solid var(--line);border-radius:5px;padding:4px 8px;color:var(--muted)}
+.hud .k b{color:var(--ink);font-size:.9rem;display:block;font-variant-numeric:tabular-nums}
+.net .tline{position:absolute;right:10px;top:10px;font-family:var(--mono);font-size:.62rem;color:var(--muted);
+  background:rgba(7,9,15,.75);border:1px solid var(--line);border-radius:5px;padding:4px 8px}
 .net .tline b{color:var(--ink);font-variant-numeric:tabular-nums}
+.net .tip,.chart .tip{position:absolute;pointer-events:none;background:rgba(7,9,15,.94);border:1px solid var(--line-2);
+  border-radius:6px;padding:6px 9px;font-family:var(--mono);font-size:.66rem;color:var(--ink);white-space:nowrap;
+  transform:translate(-50%,-130%);z-index:5}
+.net .tip[hidden],.chart .tip[hidden]{display:none}
 
-/* request log */
-.log{display:grid;gap:4px;max-height:330px;overflow:auto;padding-right:2px}
-.req{display:grid;grid-template-columns:52px 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:7px 9px;background:var(--panel);text-align:left;cursor:pointer;min-width:0;animation:in .3s ease-out}
+/* --- request log --- */
+.log{display:grid;gap:4px;overflow:auto;padding-right:2px}
+.req{display:grid;grid-template-columns:46px 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);
+  border-radius:6px;padding:7px 9px;background:var(--panel);text-align:left;cursor:pointer;min-width:0;
+  animation:in .3s ease-out;transition:border-color .15s,background .15s}
 @keyframes in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.req{animation:none}}
-.req .t{font-family:var(--mono);font-size:.64rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.req .n{font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.req .n small{display:block;font-weight:500;color:var(--muted);font-size:.72rem}
-.req .c{font-family:var(--mono);font-size:.62rem;padding:2px 6px;border-radius:4px;border:1px solid currentColor}
+.req .t{font-family:var(--mono);font-size:.62rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.req .n{font-size:.8rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.req .n small{display:block;font-weight:500;color:var(--muted);font-size:.7rem;white-space:normal;line-height:1.3}
+.req .c{font-family:var(--mono);font-size:.6rem;padding:2px 6px;border-radius:4px;border:1px solid currentColor}
 .c.fp{color:var(--person)}.c.tp{color:var(--flow)}.c.bid{color:var(--warn)}.c.fpr{color:var(--bad)}
-.req[aria-pressed="true"]{border-color:var(--flow);box-shadow:inset 0 0 0 1px var(--flow)}
+.req[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.req:hover{border-color:var(--line-2);background:var(--panel-2)}
 
-/* payload */
-.payload{font-family:var(--mono);font-size:.7rem;background:#05080e;border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow:auto;max-height:240px;line-height:1.5}
-.payload .k{color:var(--muted)}.payload .v{color:var(--ink)}.payload .hot{color:var(--flow)}.payload .pii{color:var(--warn)}
-.payload .cm{color:var(--muted);font-style:italic}
-.legend{display:flex;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:.62rem;color:var(--muted)}
-.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--x)}
+/* --- payload inspector (FIX: pre-wrap) --- */
+.payload{font-family:var(--mono);font-size:.7rem;background:#05080e;border:1px solid var(--line);
+  border-radius:6px;padding:10px 12px;overflow:auto;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.payload .k{color:var(--muted)}.payload .v{color:var(--ink)}.payload .hot{color:var(--flow)}
+.payload .pii{color:var(--warn)}.payload .cm{color:var(--muted);font-style:italic}
 
-/* profile builder */
+/* --- legend --- */
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:.62rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;
+  vertical-align:-1px;background:var(--x)}
+
+/* --- profile builder --- */
 .sources{display:grid;gap:6px}
-.src{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--panel);cursor:pointer;text-align:left;min-width:0}
+.src{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;border:1px solid var(--line);
+  border-radius:6px;padding:8px 10px;background:var(--panel);cursor:pointer;text-align:left;min-width:0;
+  transition:border-color .15s,background .15s}
 .src[aria-pressed="true"]{border-color:var(--flow);background:var(--flow-dim)}
-.src .ic{width:30px;height:30px;border-radius:6px;background:var(--panel-2);display:grid;place-items:center;color:var(--flow)}
+.src .ic{width:30px;height:30px;border-radius:6px;background:var(--panel-2);display:grid;place-items:center;color:var(--muted)}
+.src[aria-pressed="true"] .ic{color:var(--flow)}
 .src .ic svg{width:18px;height:18px}
 .src b{font-size:.82rem;display:block}
 .src small{font-size:.7rem;color:var(--muted);font-family:var(--mono)}
 .graph{background:#070b12;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .graph svg{display:block;width:100%;height:auto}
+#gsvg .srcbox{cursor:pointer}
+#gsvg .srcbox:hover rect{stroke-width:2.5}
+#gsvg .ghost rect{stroke:#2f4160;stroke-dasharray:4 4}
+#gsvg .ghost text{opacity:.5}
 .profile{display:grid;gap:8px}
 .profile .row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0;font-size:.82rem}
-.profile .row.inf{color:var(--ink)}
-.profile .row .lab{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block}
-.profile .row.off{opacity:.3}
+.profile .row .lab{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block}
+.profile .row.off{opacity:.35}
+.profile .row.click{cursor:pointer;border-radius:4px;padding-inline:6px;margin-inline:-6px}
+.profile .row.click:hover{background:var(--panel)}
+.profile .row.off .fix{color:var(--ink);font-family:var(--mono);font-size:.62rem;text-decoration:underline}
 .conf{width:72px;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
-.conf i{display:block;height:100%;background:var(--flow);transition:width .4s}
+.conf i{display:block;height:100%;background:var(--person);transition:width .4s}
 .tag{font-family:var(--mono);font-size:.6rem;padding:2px 6px;border-radius:4px;border:1px solid var(--warn);color:var(--warn);width:max-content}
 .tag.src{border-color:var(--person);color:var(--person)}
 
-/* pricing */
+/* --- 02 → 03 link indicator --- */
+.linknote{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line-2);
+  border-radius:6px;padding:9px 12px;background:var(--panel);font-size:.8rem;color:var(--muted);
+  opacity:0;transform:translateY(-4px);transition:opacity .35s,transform .35s;pointer-events:none}
+.linknote.on{opacity:1;transform:none;pointer-events:auto}
+.linknote b{color:var(--ink)}
+
+/* --- pricing --- */
 .sliders{display:grid;gap:12px}
 .sl{display:grid;gap:4px}
 .sl label{display:flex;justify-content:space-between;font-size:.8rem}
-.sl label b{font-family:var(--mono);color:var(--flow)}
-.sl input{width:100%;accent-color:var(--flow)}
-.chart{background:#070b12;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.sl label b{font-family:var(--mono);color:var(--ink)}
+.sl input{width:100%;accent-color:var(--ink);cursor:pointer;height:22px}
+.chart{background:#070b12;border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative}
 .chart svg{display:block;width:100%;height:auto}
 .out{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .out .o{border:1px solid var(--line);border-radius:6px;padding:10px;display:grid;gap:3px;background:var(--panel)}
 .out .o .v{font-family:var(--mono);font-size:1.5rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
 .out .o .l{font-size:.72rem;color:var(--muted)}
-.out .o.you .v{color:var(--flow);text-shadow:var(--flow-glow)}
+.out .o.you .v{color:var(--flow)}
 .delta{font-family:var(--mono);font-size:.74rem}
 .delta.up{color:var(--bad)}.delta.down{color:var(--ok)}
-.callout{border-left:3px solid var(--flow);background:var(--flow-dim);padding:9px 12px;border-radius:0 6px 6px 0;font-size:.84rem}
-.callout.warn{border-color:var(--warn);background:rgba(255,177,59,.1)}
+.callout{border-left:3px solid var(--line-2);background:var(--panel);padding:9px 12px;border-radius:0 6px 6px 0;font-size:.84rem;color:var(--muted)}
+.callout.warn{border-color:var(--warn);background:rgba(255,177,59,.08)}
+.presets{display:flex;gap:4px;flex-wrap:wrap}
+.presets button{border:1px solid var(--line-2);background:var(--panel);border-radius:5px;padding:4px 8px;
+  font-family:var(--mono);font-size:.62rem;cursor:pointer;color:var(--muted);transition:color .15s,border-color .15s}
+.presets button:hover{color:var(--ink);border-color:var(--ink)}
 
-/* industries */
+/* --- industries --- */
 .ind3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 @media (max-width:960px){.ind3{grid-template-columns:1fr}}
-.pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid currentColor;width:max-content}
+.pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.6rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid currentColor;width:max-content}
 .p-verified{color:var(--ok)}.p-alleged{color:var(--warn)}.p-gap{color:var(--bad)}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
 .chip{font-family:var(--mono);font-size:.62rem;padding:3px 7px;border-radius:5px;background:var(--panel);color:var(--muted);border:1px solid var(--line)}
 .ev{display:grid;gap:6px}
 .ev .e{display:grid;gap:4px;border-top:1px solid var(--line);padding-top:8px;font-size:.82rem}
-.ev .e a{color:var(--flow);font-size:.74rem;word-break:break-word}
-/* interactivity polish */
-.stat{cursor:pointer;border-radius:8px;padding:6px 10px;margin:-6px -10px;transition:background .15s}
-.stat:hover{background:var(--panel-2)}
-.stat .l::after{content:" ↓";color:var(--flow)}
-.browser .page{cursor:pointer;position:relative}
-.browser .page:hover{background:#0c121c}
-.browser .page .hint{position:absolute;inset:auto 10px 10px auto;font-family:var(--mono);font-size:.6rem;color:var(--flow);opacity:.8}
-.net canvas{cursor:crosshair}
-.net .tip,.chart .tip{position:absolute;pointer-events:none;background:rgba(7,9,15,.92);border:1px solid var(--flow);border-radius:6px;padding:6px 9px;font-family:var(--mono);font-size:.66rem;color:var(--ink);white-space:nowrap;transform:translate(-50%,-120%)}
-.net .tip[hidden],.chart .tip[hidden]{display:none}
-.chart{position:relative;cursor:crosshair}
-#gsvg .srcbox{cursor:pointer}
-#gsvg .srcbox:hover rect{stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(54,232,255,.6))}
-#gsvg .ghost rect{stroke:#2f4160;stroke-dasharray:4 4}
-#gsvg .ghost text{opacity:.5}
-.profile .row.click{cursor:pointer;border-radius:4px;padding-inline:6px;margin-inline:-6px}
-.profile .row.click:hover{background:var(--panel)}
-.profile .row.off .fix{color:var(--flow);font-family:var(--mono);font-size:.62rem;text-decoration:underline}
-.src:hover,.req:hover{border-color:var(--line-2);background:var(--panel-2)}
-.chip.act{cursor:pointer}.chip.act:hover{color:var(--flow);border-color:var(--flow)}
-.ind3 .card{cursor:pointer;transition:border-color .15s,transform .15s}
-.ind3 .card:hover{border-color:var(--flow);transform:translateY(-2px)}
-.ind3 .card[data-cur="1"]{border-color:var(--flow);box-shadow:inset 0 0 0 1px var(--flow)}
+.ev .e a{color:var(--muted);font-size:.74rem;word-break:break-word}
+.ev .e a:hover{color:var(--ink)}
+.ind3 .card{cursor:pointer;transition:border-color .18s,transform .18s}
+.ind3 .card:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.ind3 .card[data-cur="1"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .ind3 .go{justify-self:start}
-.sl input{cursor:pointer;height:22px}
-.presets{display:flex;gap:4px;flex-wrap:wrap}
-.presets button{border:1px solid var(--line-2);background:var(--panel);border-radius:5px;padding:4px 8px;font-family:var(--mono);font-size:.62rem;cursor:pointer;color:var(--muted)}
-.presets button:hover{color:var(--flow);border-color:var(--flow)}
-.next{display:flex;justify-content:flex-end}
-footer{margin-top:30px;font-size:.76rem;color:var(--muted);display:grid;gap:5px;max-width:80ch}
+
+/* --- footer --- */
+footer{margin-top:30px;font-size:.76rem;color:var(--muted);display:grid;gap:6px;max-width:80ch}
+footer b{color:var(--ink)}
+
+/* ============================================================
+   SCROLLYTELLING — section 01
+   ============================================================ */
+.scrolly{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:36px;align-items:start}
+.scrolly .steps{display:grid;gap:0}
+.step{min-height:72vh;display:flex;flex-direction:column;justify-content:center;padding-block:32px;
+  opacity:.32;transition:opacity .45s ease}
+.step.in{opacity:1}
+.step .stepnum{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.step h3{font-family:var(--display);font-size:clamp(1.05rem,2vw,1.35rem);font-weight:800;line-height:1.2;margin-bottom:10px}
+.step p{color:var(--muted);max-width:46ch;margin-bottom:10px}
+.step p b{color:var(--ink);font-weight:700}
+.step .carried{font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+  border-top:1px solid var(--line);padding-top:9px;margin-top:6px}
+.scrolly .sticky{position:sticky;top:72px;display:flex;flex-direction:column;gap:10px;
+  height:calc(100vh - 96px);max-height:880px;min-height:520px}
+.scrolly .sticky .net{flex:1 1 auto;min-height:180px}
+.scrolly .sticky .logcard{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px}
+.scrolly .sticky .log{max-height:150px}
+.scrolly .sticky .payload{max-height:130px;flex:0 0 auto}
+
+/* scenario strip */
+.scenario{display:grid;gap:8px;border:1px solid var(--line);border-radius:8px;padding:12px;
+  background:var(--panel-2);margin-bottom:20px}
+.scenario .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.scenario .togs{display:grid;gap:6px;flex:1;min-width:220px}
+
+@media (max-width:900px){
+  .scrolly{grid-template-columns:1fr;gap:0}
+  .scrolly .sticky{position:sticky;top:56px;z-index:5;order:-1;background:var(--bg);
+    padding-block:10px;height:auto;max-height:none;min-height:0}
+  .scrolly .sticky .browser{display:none}
+  .scrolly .sticky .net{aspect-ratio:16/9;flex:none;min-height:0}
+  .scrolly .sticky .logcard{max-height:210px}
+  .scrolly .sticky .log{max-height:96px}
+  .scrolly .sticky .payload{max-height:88px;font-size:.64rem}
+  .step{min-height:62vh}
+  .step p{max-width:none}
+}
+
+/* --- reveal for sections 02-04 --- */
+.reveal{opacity:0;transform:translateY(10px);transition:opacity .55s ease,transform .55s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* --- reduced motion --- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .step{opacity:1}
+  .reveal{opacity:1;transform:none}
+}
 </style>
 </head>
 <body>
-
+<div class="progress" id="progress" aria-hidden="true"></div>
 <div class="wrap">
 <nav class="nav">
-  <div class="links"><a href="#s1">01 One page load</a><a href="#s2">02 The profile</a><a href="#s3">03 The price</a><a href="#s4">04 Industries</a></div>
+  <div class="links">
+    <a href="#s1" data-sec="s1">01 One page load</a>
+    <a href="#s2" data-sec="s2">02 The profile</a>
+    <a href="#s3" data-sec="s3">03 The price</a>
+    <a href="#s4" data-sec="s4">04 Industries</a>
+  </div>
   <div class="seg" role="group" aria-label="Industry mode" id="seg"></div>
 </nav>
 
@@ -194,79 +292,224 @@ footer{margin-top:30px;font-size:.76rem;color:var(--muted);display:grid;gap:5px;
   <h1>You visit one page. Here is everyone who finds out.</h1>
   <p class="sub">Three simulations, each built from documented mechanisms. Load a page and watch requests fan out. Toggle data sources and watch a profile assemble. Drag a slider and watch your price move. Switch the industry mode to see the same machine pointed at rent, groceries, or a college aid letter.</p>
   <div class="big">
-    <div class="stat" data-go="s1" role="link" tabindex="0"><span class="v" id="hCompanies">0</span><span class="l">companies reached by one page load (simulation)</span></div>
-    <div class="stat" data-go="s2" role="link" tabindex="0"><span class="v" id="hFields">0</span><span class="l">data fields sent about you</span></div>
-    <div class="stat" data-go="s3" role="link" tabindex="0"><span class="v" id="hDelta">+0%</span><span class="l">price change with full profile vs. no data</span></div>
+    <button class="stat" data-go="s1" type="button"><span class="v" id="hCompanies">0</span><span class="l">companies reached by one page load</span></button>
+    <button class="stat" data-go="s2" type="button"><span class="v" id="hFields">0</span><span class="l">data fields sent about you</span></button>
+    <button class="stat" data-go="s3" type="button"><span class="v" id="hDelta">+0%</span><span class="l">price change with full profile vs. no data</span></button>
   </div>
 </header>
 
-<!-- ============ 01 ============ -->
+<!-- ============ 01 · COLLECTION (scrollytelling) ============ -->
 <section class="block" id="s1">
-  <div class="head"><div><p class="eyebrow">01 · Collection</p><h2 id="s1Title">One page load, in real time</h2><p class="sub" id="s1Sub"></p></div><div class="num">01</div></div>
-  <div class="grid3">
-    <div class="card">
-      <h3>Your browser <button class="btn primary" id="load" type="button">Load page</button></h3>
-      <div class="browser"><div class="bar"><i></i><i></i><i></i><span class="url" id="url"></span></div>
-        <div class="page" id="pageArea" title="Click to load the page"><span class="hint" id="pageHint">click to load ▸</span><div class="ph w1"></div><div class="ph w2"></div><div class="adslot" id="ad1">AD SLOT</div><div class="ph w3"></div><div class="ph w2"></div><div class="adslot" id="ad2">AD SLOT</div></div></div>
-      <label class="tog"><input type="checkbox" id="optLogin" checked> Logged in to the site (your email is known)</label>
-      <label class="tog"><input type="checkbox" id="optLoc" checked> Location permission granted</label>
-      <label class="tog"><input type="checkbox" id="optConsent"> Trackers wait for cookie consent</label>
-      <p class="sub" style="font-size:.76rem">Illustrative model of a typical ad-supported site. Request timing and counts are representative, not a measurement of any one site.</p>
+  <div class="head">
+    <div>
+      <p class="eyebrow">01 · Collection</p>
+      <h2 id="s1Title">One page load, in real time</h2>
+      <p class="sub" id="s1Sub"></p>
     </div>
-    <div class="card">
-      <div class="net" id="net"><canvas id="cv"></canvas>
-        <div class="hud"><span class="k">Requests<b id="kReq">0</b></span><span class="k">Companies<b id="kCo">0</b></span><span class="k">Bidders<b id="kBid">0</b></span></div>
-        <div class="tline">t = <b id="tms">0</b> ms</div><div class="tip" id="netTip" hidden></div></div>
-      <div class="legend"><span style="--x:var(--person)">You / first party</span><span style="--x:var(--flow)">Tracker</span><span style="--x:var(--warn)">Ad exchange → bidders</span><span style="--x:var(--bad)">Fingerprint / broker</span></div>
+    <div class="num">01</div>
+  </div>
+
+  <div class="scrolly">
+    <div class="steps">
+      <div class="scenario">
+        <div class="row">
+          <span class="eyebrow" style="flex:1">Scenario</span>
+          <button class="btn" id="replay" type="button">Replay ▸</button>
+        </div>
+        <div class="togs">
+          <label class="tog"><input type="checkbox" id="optLogin" checked> Logged in to the site (your email is known)</label>
+          <label class="tog"><input type="checkbox" id="optLoc" checked> Location permission granted</label>
+          <label class="tog"><input type="checkbox" id="optConsent"> Trackers wait for cookie consent</label>
+        </div>
+        <p class="sub" style="font-size:.72rem">Illustrative model of a typical ad-supported site. Request timing and counts are representative, not a measurement of any one site.</p>
+      </div>
+
+      <article class="step" data-stage="0">
+        <div class="stepnum">Step 1</div>
+        <h3>You open the page</h3>
+        <p>Your browser asks the site for the article. The server sends back HTML, and that <b>first-party request</b> carries what it needs to render: your IP, your browser, your screen size, and any cookie the site already set.</p>
+        <p>This is the only request you intended to make.</p>
+        <div class="carried">1 request · 1 company</div>
+      </article>
+
+      <article class="step" data-stage="1">
+        <div class="stepnum">Step 2</div>
+        <h3>One line of that HTML loads a tag manager</h3>
+        <p>A single <span class="mono">&lt;script&gt;</span> tag. Its only job is to inject other companies' code into the page.</p>
+        <p>One line becomes a dozen requests.</p>
+        <div class="carried">+1 request · +1 company</div>
+      </article>
+
+      <article class="step" data-stage="2">
+        <div class="stepnum">Step 3</div>
+        <h3>Analytics and a social pixel</h3>
+        <p>Analytics assigns you a <b>persistent client ID</b> that follows you across visits. The social pixel sets a cross-site cookie so the same company recognizes you on every site that carries it.</p>
+        <p>And if you're logged in here, the pixel can send a <b>hash of your email address</b> — which links this visit to your real identity, and to every other site where you used that address.</p>
+        <div class="carried">+2 requests · +2 companies</div>
+      </article>
+
+      <article class="step" data-stage="3">
+        <div class="stepnum">Step 4</div>
+        <h3>A wrapper packages everything known about you</h3>
+        <p>Header bidding builds the bid request: the page, the ad slots, your consent string, your client ID, and every audience segment anyone has attached to it.</p>
+        <p>It is now a <b>product description</b>, and you are the product.</p>
+        <div class="carried">+1 request</div>
+      </article>
+
+      <article class="step" data-stage="4">
+        <div class="stepnum">Step 5</div>
+        <h3>Three exchanges broadcast it to every bidder</h3>
+        <p>Each exchange fans the request out using <b>OpenRTB</b>. Bidders have milliseconds to decide what you're worth.</p>
+        <p>One wins and shows an ad. <b>Every other bidder keeps the data.</b> The losing bids are not returned.</p>
+        <div class="carried">+3 requests · +35 bidders</div>
+      </article>
+
+      <article class="step" data-stage="5">
+        <div class="stepnum">Step 6</div>
+        <h3>The winning ad loads its own trackers</h3>
+        <p>The creative arrives with measurement scripts attached: viewability, verification, attribution. Each one is another company.</p>
+        <p>None of them asked you.</p>
+        <div class="carried">+1 request · +3 companies</div>
+      </article>
+
+      <article class="step" data-stage="6">
+        <div class="stepnum">Step 7</div>
+        <h3>And then the identifiers that survive a cookie wipe</h3>
+        <p><b>Canvas, font and audio fingerprinting</b> recognize this browser after you clear cookies. A data broker beacon writes this page into a profile it will license later.</p>
+        <p>Nothing you saw on the page mentioned either one.</p>
+        <div class="carried">+2 requests · +2 companies</div>
+      </article>
     </div>
-    <div class="card">
-      <h3>Request log <span class="mono" style="font-size:.62rem;color:var(--muted)">click a row</span></h3>
-      <div class="log" id="log"></div>
-      <div class="payload" id="payload"><span class="cm">// Load the page, then click a request to inspect what it carried.</span></div>
+
+    <div class="sticky" id="stickyCol">
+      <div class="browser">
+        <div class="bar"><i></i><i></i><i></i><span class="url" id="url"></span></div>
+        <div class="page" id="pageArea">
+          <span class="hint" id="pageHint">scroll to load ▸</span>
+          <div class="ph w1"></div><div class="ph w2"></div>
+          <div class="adslot" id="ad1">AD SLOT</div>
+          <div class="ph w3"></div><div class="ph w2"></div>
+          <div class="adslot" id="ad2">AD SLOT</div>
+        </div>
+      </div>
+
+      <div class="net" id="net">
+        <canvas id="cv"></canvas>
+        <div class="hud">
+          <span class="k">Requests<b id="kReq">0</b></span>
+          <span class="k">Companies<b id="kCo">0</b></span>
+          <span class="k">Bidders<b id="kBid">0</b></span>
+        </div>
+        <div class="tline">t = <b id="tms">0</b> ms</div>
+        <div class="tip" id="netTip" hidden></div>
+      </div>
+
+      <div class="logcard">
+        <h3 style="font-size:.78rem">Request log <span class="mono" style="font-size:.6rem;color:var(--muted);font-weight:500">click a row to inspect</span></h3>
+        <div class="log" id="log"></div>
+        <div class="payload" id="payload"><span class="cm">// Rows appear as you scroll. Click one to see what it carried.</span></div>
+      </div>
     </div>
   </div>
-  <div class="next"><button type="button" class="btn" data-go="s2">Next: where this data gets joined ↓</button></div>
+
+  <div class="legend">
+    <span style="--x:var(--person)">You / first party</span>
+    <span style="--x:var(--flow)">Tracker</span>
+    <span style="--x:var(--warn)">Ad exchange → bidders</span>
+    <span style="--x:var(--bad)">Fingerprint / broker</span>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end">
+    <button type="button" class="btn" data-go="s2">Next: where this data gets joined ↓</button>
+  </div>
 </section>
 
-<!-- ============ 02 ============ -->
-<section class="block" id="s2">
-  <div class="head"><div><p class="eyebrow">02 · Aggregation</p><h2>Five records that were never about the same person, until a broker matched them</h2><p class="sub">Toggle sources on and off. Each one carries a key (an email hash, an address, a device ID) that lets it be joined to the others. The inferred fields at the bottom were never collected from anyone; they were computed.</p></div><div class="num">02</div></div>
+<!-- ============ 02 · AGGREGATION ============ -->
+<section class="block reveal" id="s2">
+  <div class="head">
+    <div>
+      <p class="eyebrow">02 · Aggregation</p>
+      <h2>Five records that were never about the same person, until a broker matched them</h2>
+      <p class="sub">Toggle sources on and off. Each one carries a key — an email hash, an address, a device ID — that lets it be joined to the others. The inferred fields at the bottom were never collected from anyone; they were computed.</p>
+    </div>
+    <div class="num">02</div>
+  </div>
   <div class="grid3">
     <div class="card"><h3>Sources</h3><div class="sources" id="sources"></div></div>
     <div class="card"><div class="graph"><svg id="gsvg" viewBox="0 0 520 420" role="img" aria-label="Records joining into one profile"></svg></div></div>
-    <div class="card"><h3>The profile <span class="mono" id="profCount" style="font-size:.62rem;color:var(--muted)"></span></h3><div class="profile" id="profile"></div></div>
+    <div class="card">
+      <h3>The profile <span class="mono" id="profCount" style="font-size:.62rem;color:var(--muted)"></span></h3>
+      <div class="profile" id="profile"></div>
+    </div>
   </div>
-  <div class="next"><button type="button" class="btn" data-go="s3">Next: how the profile sets a price ↓</button></div>
+  <div class="linknote" id="linkNote" role="status" aria-live="polite"></div>
+  <div style="display:flex;justify-content:flex-end">
+    <button type="button" class="btn" data-go="s3">Next: how the profile sets a price ↓</button>
+  </div>
 </section>
 
-<!-- ============ 03 ============ -->
-<section class="block" id="s3">
-  <div class="head"><div><p class="eyebrow">03 · Monetization</p><h2 id="s3Title">How an algorithm turns the profile into your price</h2><p class="sub">Every pricing model asks the same question: at each price, how likely is this person to say yes? With no data it can only use the average customer, so everyone gets the list price. With a profile it estimates <em>your</em> curve, and the revenue-maximizing price moves toward the most you would tolerate. Drag the sliders.</p></div><div class="num">03</div></div>
+<!-- ============ 03 · MONETIZATION ============ -->
+<section class="block reveal" id="s3">
+  <div class="head">
+    <div>
+      <p class="eyebrow">03 · Monetization</p>
+      <h2 id="s3Title">How an algorithm turns the profile into your price</h2>
+      <p class="sub">Every pricing model asks the same question: at each price, how likely is this person to say yes? With no data it can only use the average customer, so everyone gets the list price. With a profile it estimates <em>your</em> curve, and the revenue-maximizing price moves toward the most you would tolerate. Drag the sliders.</p>
+    </div>
+    <div class="num">03</div>
+  </div>
   <div class="grid3">
-    <div class="card"><h3>What the model knows</h3><div class="presets" id="presets"><button type="button" data-p="0">No data</button><button type="button" data-p="1">Price-sensitive</button><button type="button" data-p="2">Urgent + wealthy</button><button type="button" data-p="3">From my profile</button></div>
+    <div class="card">
+      <h3>What the model knows</h3>
+      <div class="presets" id="presets">
+        <button type="button" data-p="0">No data</button>
+        <button type="button" data-p="1">Price-sensitive</button>
+        <button type="button" data-p="2">Urgent + wealthy</button>
+        <button type="button" data-p="3">From my profile</button>
+      </div>
       <div class="sliders">
         <div class="sl"><label>Data points about you <b id="vN">0</b></label><input type="range" id="sN" min="0" max="250" value="0"></div>
         <div class="sl"><label><span id="lInc">Estimated household income</span> <b id="vInc">mid</b></label><input type="range" id="sInc" min="0" max="100" value="50"></div>
-        <div class="sl"><label><span id="lUrg">Urgency signal (visits, saved listings)</span> <b id="vUrg">mid</b></label><input type="range" id="sUrg" min="0" max="100" value="50"></div>
+        <div class="sl"><label><span id="lUrg">Urgency signal</span> <b id="vUrg">mid</b></label><input type="range" id="sUrg" min="0" max="100" value="50"></div>
         <div class="sl"><label><span id="lAlt">Alternatives you could choose</span> <b id="vAlt">many</b></label><input type="range" id="sAlt" min="0" max="100" value="70"></div>
         <label class="tog" id="coordWrap"><input type="checkbox" id="sCoord"> <span id="lCoord">Competitors pool their private data (alleged RealPage mechanism)</span></label>
       </div>
       <div class="callout" id="howto"></div>
     </div>
-    <div class="card"><div class="chart"><svg id="psvg" viewBox="0 0 560 360" role="img" aria-label="Demand and revenue curves"></svg><div class="tip" id="chartTip" hidden></div></div>
-      <div class="legend"><span style="--x:var(--muted)">Average customer</span><span style="--x:var(--flow)">Model's estimate of you</span><span style="--x:var(--warn)">Expected revenue from you</span></div></div>
-    <div class="card"><h3>Output</h3>
-      <div class="out"><div class="o"><span class="v" id="oList">$0</span><span class="l" id="oListL">List price (no data)</span></div><div class="o you"><span class="v" id="oYou">$0</span><span class="l" id="oYouL">Your price</span></div></div>
+    <div class="card">
+      <div class="chart">
+        <svg id="psvg" viewBox="0 0 560 360" role="img" aria-label="Demand curves and the gap between list price and personalized price"></svg>
+        <div class="tip" id="chartTip" hidden></div>
+      </div>
+      <div class="legend">
+        <span style="--x:var(--muted)">Average customer</span>
+        <span style="--x:var(--flow)">Model's estimate of you</span>
+        <span style="--x:var(--flow);opacity:.35">Shaded band = the gap the profile created</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Output</h3>
+      <div class="out">
+        <div class="o"><span class="v" id="oList">$0</span><span class="l" id="oListL">List price (no data)</span></div>
+        <div class="o you"><span class="v" id="oYou">$0</span><span class="l" id="oYouL">Your price</span></div>
+      </div>
       <p class="delta" id="oDelta"></p>
       <div class="callout warn" id="oNote"></div>
-      <p class="sub" style="font-size:.76rem">Simplified model: logistic demand, revenue = price × probability. Real vendors use richer models, but the objective and the direction of the result are the same.</p>
+      <p class="sub" style="font-size:.76rem">Simplified model: logistic demand, price set to maximize price × probability. Real vendors use richer models, but the objective and the direction of the result are the same.</p>
     </div>
   </div>
 </section>
 
-<!-- ============ 04 ============ -->
-<section class="block" id="s4">
-  <div class="head"><div><p class="eyebrow">04 · Where it is already happening</p><h2>The same machine, three industries</h2><p class="sub">What feeds the profile, what the model outputs, and whether any law applies. Pills mark what is verified in a primary source, what is alleged in a pending case, and where no law reaches.</p></div><div class="num">04</div></div>
+<!-- ============ 04 · INDUSTRIES ============ -->
+<section class="block reveal" id="s4">
+  <div class="head">
+    <div>
+      <p class="eyebrow">04 · Where it is already happening</p>
+      <h2>The same machine, three industries</h2>
+      <p class="sub">What feeds the profile, what the model outputs, and whether any law applies. Pills mark what is verified in a primary source, what is alleged in a pending case, and where no law reaches.</p>
+    </div>
+    <div class="num">04</div>
+  </div>
   <div class="ind3" id="ind3"></div>
 </section>
 
@@ -279,254 +522,926 @@ footer{margin-top:30px;font-size:.76rem;color:var(--muted);display:grid;gap:5px;
 <script>
 (function(){
 "use strict";
-const $=s=>document.querySelector(s);
-const fmt=n=>"$"+Math.round(n).toLocaleString();
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const fmt = n => "$" + Math.round(n).toLocaleString();
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* ================= INDUSTRY MODES ================= */
-const MODES={
- general:{name:"General",url:"news-example.com/article",s1:"A page you read for free",s1sub:"An ad-supported article. Nothing is purchased; the page itself is the transaction.",
-  price:{base:60,unit:"",label:"a product you buy online",inc:"Estimated household income",urg:"Urgency signal (visits, cart, searches)",alt:"Alternatives you could choose",coord:false,invert:false}},
- housing:{name:"Housing",url:"apartments-example.com/baltimore/2br",s1:"Searching for an apartment",s1sub:"A listing site. Your search is already a signal: in-market, budget range, neighborhood.",
-  price:{base:1800,unit:"/mo",label:"monthly rent",inc:"Estimated household income",urg:"Urgency (saved listings, repeat visits, move-in date)",alt:"Vacant units nearby you could choose",coord:true,invert:false}},
- retail:{name:"Grocery",url:"grocery-example.com/cart",s1:"Opening a grocery app",s1sub:"Your loyalty ID ties this session to every basket you have ever scanned.",
-  price:{base:62,unit:"",label:"a weekly basket",inc:"Estimated household income",urg:"Urgency (low stock at home, delivery window)",alt:"Other stores within reach",coord:false,invert:false}},
- education:{name:"Education",url:"college-example.edu/apply",s1:"Visiting a college website at 16",s1sub:"Recruitment tracking starts years before any application. No purchase, no FAFSA, no relationship yet.",
-  price:{base:45000,unit:"/yr",label:"net tuition after aid",inc:"Estimated ability to pay (purchased household data)",urg:"Enrollment likelihood (engagement, geography, program)",alt:"Competing offers you are likely to hold",coord:false,invert:true}}
+/* ============================================================
+   INDUSTRY MODES
+   ============================================================ */
+const MODES = {
+  general:{ name:"General", url:"news-example.com/article",
+    s1:"A page you read for free",
+    s1sub:"An ad-supported article. Nothing is purchased; the page itself is the transaction.",
+    price:{ base:60, unit:"", label:"a product you buy online",
+      inc:"Estimated household income", urg:"Urgency signal (visits, cart, searches)",
+      alt:"Alternatives you could choose", coord:false, invert:false }},
+  housing:{ name:"Housing", url:"apartments-example.com/baltimore/2br",
+    s1:"Searching for an apartment",
+    s1sub:"A listing site. Your search is already a signal: in-market, budget range, neighborhood.",
+    price:{ base:1800, unit:"/mo", label:"monthly rent",
+      inc:"Estimated household income", urg:"Urgency (saved listings, repeat visits, move-in date)",
+      alt:"Vacant units nearby you could choose", coord:true, invert:false }},
+  retail:{ name:"Grocery", url:"grocery-example.com/cart",
+    s1:"Opening a grocery app",
+    s1sub:"Your loyalty ID ties this session to every basket you have ever scanned.",
+    price:{ base:62, unit:"", label:"a weekly basket",
+      inc:"Estimated household income", urg:"Urgency (low stock at home, delivery window)",
+      alt:"Other stores within reach", coord:false, invert:false }},
+  education:{ name:"Education", url:"college-example.edu/apply",
+    s1:"Visiting a college website at 16",
+    s1sub:"Recruitment tracking starts years before any application. No purchase, no FAFSA, no relationship yet.",
+    price:{ base:45000, unit:"/yr", label:"net tuition after aid",
+      inc:"Estimated ability to pay (purchased household data)", urg:"Enrollment likelihood (engagement, geography, program)",
+      alt:"Competing offers you are likely to hold", coord:false, invert:true }}
 };
-let mode="general";
+let mode = "general";
 
-/* ================= 01 PAGE LOAD SIM ================= */
-const FIELDS={
- url:["site.page","the exact page","hot"],ref:["site.ref","where you came from","hot"],ip:["device.ip","IP address (≈ city)","pii"],ua:["device.ua","browser, OS, device model",""],scr:["device.w/h","screen size",""],
- cookie:["cookie","site login cookie","pii"],cid:["client_id","persistent tracker ID","hot"],sess:["session","session timing",""],email:["em (sha256)","hashed email address","pii"],
- ev:["event","PageView / ViewContent","hot"],fbp:["_fbp","cross-site pixel cookie","hot"],slots:["imp[]","ad slots on page",""],consent:["gdpr_consent","consent string",""],
- ifa:["device.ifa","advertising ID","pii"],geo:["device.geo.lat/lon","precise location","pii"],uid:["user.id / buyeruid","exchange-assigned user ID","hot"],seg:["user.data.segment","audience segments (in-market: housing)","hot"],
- canvas:["canvas hash","GPU rendering fingerprint","hot"],fonts:["fonts[]","installed fonts","hot"],tz:["timezone","time zone + language",""],audio:["audio ctx","audio fingerprint","hot"]
-};
-function reqPlan(){
- const login=$("#optLogin").checked, loc=$("#optLoc").checked, consent=$("#optConsent").checked;
- const m=MODES[mode];
- const R=[];
- R.push({t:0,n:m.url.split("/")[0],d:"The page you asked for",c:"fp",f:["url","ip","ua","scr","cookie"],note:"First party. Needed to render the page. The only request you intended."});
- const tag=consent?650:140;
- R.push({t:tag,n:"Tag manager",d:"Loads other companies' code",c:"tp",f:["url","ref","cid"],note:"A loader whose only job is to inject other trackers. One line in the page becomes a dozen requests."});
- R.push({t:tag+60,n:"Analytics",d:"Page view, session, client ID",c:"tp",f:["url","ref","scr","cid","sess"],note:"Assigns you a persistent client ID that follows you across visits."});
- R.push({t:tag+120,n:"Social pixel",d:"Event + cross-site cookie"+(login?" + hashed email":""),c:"tp",f:["url","ev","fbp"].concat(login?["email"]:[]),note:login?"Because you are logged in, the pixel can send a hash of your email. That links this visit to your social profile and to every other site where you used that email.":"Without a login the pixel still sets a cross-site cookie that recognizes you on every site carrying the same pixel."});
- R.push({t:tag+190,n:"Header-bidding wrapper",d:"Packages your profile for auction",c:"tp",f:["url","slots","consent","cid"],note:"Builds the bid request: everything known about you and the page, formatted for ad exchanges."});
- const exch=["Exchange A","Exchange B","Exchange C"];
- exch.forEach((e,i)=>{R.push({t:tag+240+i*70,n:e,d:"Bid request → bidders",c:"bid",fan:11+i*3,f:["url","ref","ip","ua","ifa","uid","seg"].concat(loc?["geo"]:[]),note:"OpenRTB bid request. Broadcast to every bidder on the exchange. One wins and shows an ad; every other bidder keeps the data. "+(loc?"Includes precise lat/lon because location was allowed.":"No GPS, but the IP still resolves to a city.")});});
- R.push({t:tag+560,n:"Winning ad + verification",d:"Creative, viewability, 3 more trackers",c:"tp",f:["url","ip","ua","cid"],note:"The ad itself loads its own measurement scripts. Each is another company."});
- R.push({t:tag+700,n:"Fingerprint script",d:"Identifies you without any cookie",c:"fpr",f:["canvas","fonts","tz","audio","ua","scr"],note:"Canvas, font and audio fingerprinting recognize this browser after cookies are cleared. The FTC has named this class of technique in its tracking enforcement."});
- R.push({t:tag+820,n:"Data broker beacon",d:"Appends this visit to your file",c:"fpr",f:["cid","ifa","seg"].concat(login?["email"]:[]),note:"A broker that bought a seat as a bidder, or runs a pixel of its own, writes this page into a profile it will license later."});
- return R;
-}
-let selReq=null,plan=[],fired=0,companies=0,bidders=0,fieldSet=new Set(),raf=null,t0=0,playing=false;
-const cv=$("#cv"),ctx=cv.getContext("2d");
-let nodes=[],packets=[],W=0,H=0;
-function sizeCanvas(){const r=$("#net").getBoundingClientRect();W=cv.width=Math.round(r.width*devicePixelRatio);H=cv.height=Math.round(r.height*devicePixelRatio);}
-function resetSim(){
- cancelAnimationFrame(raf);playing=false;fired=0;companies=0;bidders=0;fieldSet=new Set();nodes=[];packets=[];
- $("#log").innerHTML="";$("#kReq").textContent=0;$("#kCo").textContent=0;$("#kBid").textContent=0;$("#tms").textContent=0;
- $("#ad1").className="adslot";$("#ad2").className="adslot";$("#ad1").textContent="AD SLOT";$("#ad2").textContent="AD SLOT";
- $("#payload").innerHTML='<span class="cm">// Load the page, then click a request to inspect what it carried.</span>';
- $("#url").textContent=MODES[mode].url;$("#load").disabled=false;$("#load").textContent="Load page";
- sizeCanvas();drawNet(0);
-}
-const COL={fp:"#7b96ff",tp:"#36e8ff",bid:"#ffb13b",fpr:"#ff4f63"};
-function addNode(label,c,ring,parent){
- const n={label,c,ring,parent,x:0,y:0,born:performance.now()};
- const cx=W/2,cy=H/2,r=ring===0?0:ring===1?Math.min(W,H)*.27:Math.min(W,H)*.44;
- if(ring===0){n.x=cx;n.y=cy;}else{const k=nodes.filter(m=>m.ring===ring).length;const a=-Math.PI/2+k*(ring===1?.78:.21);n.x=cx+Math.cos(a)*r;n.y=cy+Math.sin(a)*r;}
- nodes.push(n);return n;
-}
-function drawNet(now){
- ctx.clearRect(0,0,W,H);const dp=devicePixelRatio;
- nodes.forEach(n=>{if(!n.parent)return;ctx.strokeStyle=n.c==="bid"?"rgba(255,177,59,.25)":"rgba(54,232,255,.18)";ctx.lineWidth=1*dp;ctx.beginPath();ctx.moveTo(n.parent.x,n.parent.y);ctx.lineTo(n.x,n.y);ctx.stroke();});
- packets=packets.filter(p=>now-p.t<p.d);
- packets.forEach(p=>{const k=(now-p.t)/p.d,x=p.a.x+(p.b.x-p.a.x)*k,y=p.a.y+(p.b.y-p.a.y)*k;ctx.fillStyle=COL[p.c];ctx.shadowColor=COL[p.c];ctx.shadowBlur=10*dp;ctx.beginPath();ctx.arc(x,y,3*dp,0,7);ctx.fill();ctx.shadowBlur=0;});
- nodes.forEach(n=>{if(selReq!==null&&n.req===selReq){ctx.strokeStyle="#fff";ctx.lineWidth=2*dp;ctx.beginPath();ctx.arc(n.x,n.y,(n.ring===2?8:12)*dp,0,7);ctx.stroke();}const age=Math.min(1,(now-n.born)/300);const rr=(n.ring===0?16:n.ring===1?7:4)*dp*(0.6+0.4*age);ctx.fillStyle=n.ring===0?"#7b96ff":COL[n.c];ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=(n.ring===0?22:8)*dp;ctx.beginPath();ctx.arc(n.x,n.y,rr,0,7);ctx.fill();ctx.shadowBlur=0;
-  if(n.ring<2){ctx.fillStyle="#eef2f8";ctx.font=`${(n.ring===0?11:9)*dp}px JetBrains Mono, monospace`;ctx.textAlign="center";ctx.fillText(n.label,n.x,n.y+(n.ring===0?30:18)*dp);}});
-}
-function tick(now){
- const t=now-t0;$("#tms").textContent=Math.min(Math.round(t),9999);
- while(fired<plan.length&&plan[fired].t<=t){fire(plan[fired],fired);fired++;}
- drawNet(now);
- if(fired<plan.length||packets.length)raf=requestAnimationFrame(tick);else{playing=false;$("#load").disabled=false;$("#load").textContent="Reload page";$("#pageHint").textContent="click any node or request ▸";if(selReq===null&&plan.length)showPayload(plan.findIndex(r=>r.c==="bid"));}
-}
-function fire(r,i){
- const you=nodes[0];
- const n=addNode(r.n,r.c,1,you);n.req=i;companies++;
- packets.push({a:you,b:n,t:performance.now(),d:420,c:r.c});
- if(r.fan){for(let k=0;k<r.fan;k++){const b=addNode("Bidder "+(k+1)+" via "+r.n,r.c,2,n);b.req=i;companies++;bidders++;packets.push({a:n,b:b,t:performance.now()+60+k*25,d:380,c:"bid"});}}
- r.f.forEach(f=>fieldSet.add(f));
- if(r.n.startsWith("Winning")){$("#ad1").className="adslot filled";$("#ad1").textContent="TARGETED AD";$("#ad2").className="adslot filled";$("#ad2").textContent="TARGETED AD";}
- $("#kReq").textContent=i+1+(r.fan||0);$("#kCo").textContent=companies;$("#kBid").textContent=bidders;
- $("#hCompanies").textContent=companies;$("#hFields").textContent=fieldSet.size;
- const el=document.createElement("button");el.type="button";el.className="req";el.dataset.i=i;
- el.innerHTML=`<span class="t">${Math.round(r.t)}ms</span><span class="n">${r.n}${r.fan?` <span style="color:var(--warn)">×${r.fan}</span>`:""}<small>${r.d}</small></span><span class="c ${r.c}">${{fp:"1st",tp:"3rd",bid:"RTB",fpr:"ID"}[r.c]}</span>`;
- $("#log").appendChild(el);$("#log").scrollTop=$("#log").scrollHeight;
-}
-function showPayload(i){
- selReq=i;if(!playing)drawNet(performance.now());const r=plan[i];document.querySelectorAll(".req").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.i===i));
- const lines=r.f.map(f=>{const d=FIELDS[f];return `<span class="k">${d[0].padEnd(20)}</span> <span class="v ${d[2]}">${d[1]}</span>`;}).join("\n");
- $("#payload").innerHTML=`<span class="cm">// ${r.n}${r.fan?` → ${r.fan} bidders received this`:""}</span>\n${lines}\n\n<span class="cm">// ${r.note}</span>`;
-}
-function startLoad(){if(playing)return;$("#pageHint").textContent="loading…";selReq=null;resetSim();plan=reqPlan();nodes=[];addNode("YOU",'fp',0,null);t0=performance.now();playing=true;$("#load").disabled=true;$("#load").textContent="Loading…";raf=requestAnimationFrame(tick);}
-$("#load").addEventListener("click",startLoad);$("#pageArea").addEventListener("click",startLoad);
-$("#log").addEventListener("click",e=>{const b=e.target.closest(".req");if(b)showPayload(+b.dataset.i);});
-["optLogin","optLoc","optConsent"].forEach(id=>$("#"+id).addEventListener("change",()=>{if(!playing)resetSim();}));
-window.addEventListener("resize",()=>{if(!playing){sizeCanvas();drawNet(performance.now());}});
+/* ============================================================
+   PRICING MODEL  (pure function so it can be reused for previews)
+   ============================================================ */
+const sig = x => 1/(1+Math.exp(-x));
 
-/* ================= 02 PROFILE BUILDER ================= */
-const SVGI={browser:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>',phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>',pub:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V9l7-5 7 5v12M10 21v-6h4v6"/></svg>',court:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M5 7l7-4 7 4M4 11l3 6h-6zM17 11l3 6h-6z"/></svg>',test:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12l2 2 4-4M9 17h6"/></svg>'};
-const SRC=[
- {id:"browser",ic:"browser",n:"Browser trackers",k:["email#","tracker ID"],fields:["email#","in-market: housing","pages viewed","device"],note:"from 01"},
- {id:"phone",ic:"phone",n:"Phone app SDKs",k:["ad ID"],fields:["ad ID","lat/lon history","apps installed"],note:"RTB bidstream"},
- {id:"loyalty",ic:"card",n:"Loyalty card",k:["email#","address"],fields:["name","address","email#","purchases 3 yrs","brands"],note:"grocer / retailer"},
- {id:"public",ic:"pub",n:"Public records",k:["address"],fields:["address","home value","voter reg","age range"],note:"county + state"},
- {id:"court",ic:"court",n:"Court records",k:["name+DOB"],fields:["name","DOB","eviction filing (dismissed)"],note:"bought by screeners"},
- {id:"test",ic:"test",n:"Standardized test",k:["name+DOB","address"],fields:["GPA","intended major","parents' income (self-reported)"],note:"education mode"}
-];
-const INFER=[
- {n:"Estimated household income",need:["public","loyalty"],any:true,v:"$64–78k",why:"home value + purchase mix"},
- {n:"Price sensitivity",need:["loyalty","browser"],any:true,v:"Low (buys brand names)",why:"basket composition"},
- {n:"Life stage",need:["loyalty"],v:"Likely parent of a young child",why:"purchases"},
- {n:"In-market for housing",need:["browser","phone"],any:true,v:"High (moving within 60 days)",why:"listing visits + location history"},
- {n:"Housing risk flag",need:["court"],v:"Eviction filing present",why:"even though dismissed"},
- {n:"Ability to pay (pre-FAFSA)",need:["test","public"],v:"Pell unlikely · 'affordability risk: low'",why:"income estimate + self-reported income + home value"}
-];
-let on=new Set(["browser"]);
-function renderSources(){
- $("#sources").innerHTML=SRC.filter(s=>mode==="education"||s.id!=="test").map(s=>`<button type="button" class="src" data-id="${s.id}" aria-pressed="${on.has(s.id)}"><span class="ic">${SVGI[s.ic]}</span><span><b>${s.n}</b><small>keys: ${s.k.join(" · ")} · ${s.note}</small></span></button>`).join("");
+function computeModel(n, inc, urg, alt, coord, modeKey){
+  const p = MODES[modeKey].price;
+  const w = n/(n+70);
+  const wtpYou = p.base*(1 + 0.6*(inc-0.5) + 0.45*(urg-0.5) - 0.4*(alt-0.5));
+  const popShift = (coord && p.coord) ? 1.12 : 1;
+  const kPop  = 4/(p.base*popShift);
+  const kYou  = kPop*(1 + 3*w);
+  const centerPop = p.base*popShift;
+  const centerYou = p.base*popShift + (wtpYou - p.base)*w;
+  const dPop = x => 1 - sig(kPop*(x-centerPop)*1.2);
+  const dYou = x => 1 - sig(kYou*(x-centerYou)*1.2);
+  const xs = [];
+  for (let i=0;i<=120;i++) xs.push(p.base*0.3 + i*(p.base*1.5)/120);
+  let bestPop = xs[0], bPopV = -1, bestYou = xs[0], bYouV = -1;
+  xs.forEach(x => {
+    const rp = x*dPop(x), ry = x*dYou(x);
+    if (rp > bPopV){ bPopV = rp; bestPop = x; }
+    if (ry > bYouV){ bYouV = ry; bestYou = x; }
+  });
+  return { xs, dPop, dYou, bestPop, bestYou, p, w, n };
 }
-function renderGraph(){
- const act=SRC.filter(s=>on.has(s.id)&&(mode==="education"||s.id!=="test"));
- const cx=400,cy=210;let out="";
- const keys={};act.forEach(s=>s.k.forEach(k=>{keys[k]=(keys[k]||0)+1;}));
- act.forEach((s,i)=>{const y=40+i*(340/Math.max(1,act.length-1||1));const x=70;
-  s.k.forEach(k=>{const shared=keys[k]>1;out+=`<path d="M${x+90},${y} C${x+200},${y} ${cx-150},${cy} ${cx-60},${cy}" fill="none" stroke="${shared?'#36e8ff':'#2f4160'}" stroke-width="${shared?2:1}" stroke-dasharray="${shared?'':'4 4'}" opacity="${shared?.9:.6}"/>`;
-   if(shared)out+=`<circle r="3" fill="#36e8ff"><animateMotion dur="${2+i*.3}s" repeatCount="indefinite" path="M${x+90},${y} C${x+200},${y} ${cx-150},${cy} ${cx-60},${cy}"/></circle>`;});
-  out+=`<g class="srcbox" data-id="${s.id}"><title>Click to remove ${s.n}</title><rect x="${x-60}" y="${y-18}" width="150" height="36" rx="5" fill="#141b28" stroke="#36e8ff"/><text x="${x+15}" y="${y-3}" text-anchor="middle" font-family="Manrope" font-weight="700" font-size="11" fill="#eef2f8">${s.n}</text><text x="${x+15}" y="${y+11}" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="#8793a8">${s.k.join(" · ")}</text></g>`;});
- const off=SRC.filter(s=>!on.has(s.id)&&(mode==="education"||s.id!=="test"));
- off.forEach((s,i)=>{const x=470,y=30+i*30;out+=`<g class="srcbox ghost" data-id="${s.id}"><title>Click to add ${s.n}</title><rect x="${x-20}" y="${y-11}" width="68" height="22" rx="4" fill="#0e131d"/><text x="${x+14}" y="${y+3}" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="#8793a8">+ ${s.n.split(" ")[0]}</text></g>`;});
- out+=`<circle cx="${cx}" cy="${cy}" r="${48+act.length*5}" fill="rgba(54,232,255,.08)" stroke="#36e8ff" stroke-width="2"/><text x="${cx}" y="${cy-6}" text-anchor="middle" font-family="Unbounded" font-weight="800" font-size="13" fill="#eef2f8">PERSON A</text><text x="${cx}" y="${cy+12}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#36e8ff">${act.length} source${act.length===1?"":"s"} joined</text>`;
- const shared=Object.entries(keys).filter(e=>e[1]>1).map(e=>e[0]);
- out+=`<text x="${cx}" y="${cy+70+act.length*5}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">${shared.length?"match keys: "+shared.join(", "):"no shared keys yet — records stay separate"}</text>`;
- $("#gsvg").innerHTML=out;
-}
-function renderProfile(){
- const act=[...on].filter(id=>mode==="education"||id!=="test");
- const ids=new Set(act);const raw=[];SRC.filter(s=>ids.has(s.id)).forEach(s=>s.fields.forEach(f=>raw.push([f,s.n])));
- let html=`<div class="row"><span><span class="lab">Collected</span>${raw.length?raw.map(r=>r[0]).join(" · "):"—"}</span><span class="tag src">${raw.length} fields</span></div>`;
- let cnt=0;
- INFER.forEach(f=>{if(mode!=="education"&&f.n.startsWith("Ability"))return;if(mode==="education"&&f.n.startsWith("Housing risk"))return;
-  const have=f.need.filter(n=>ids.has(n)).length;const ok=f.any?have>0:have===f.need.length;const conf=ok?Math.min(100,45+have*25+act.length*4):0;if(ok)cnt++;
-  html+=`<div class="row inf ${ok?"":"off click"}" ${ok?"":`data-need="${f.need.join(",")}" title="Click to add the sources this needs"`}><span><span class="lab">Inferred · ${f.why}</span>${f.n}: <b>${ok?f.v:`<span class="fix">add ${f.need.join(" + ")} ▸</span>`}</b></span><span class="conf" title="confidence"><i style="width:${conf}%"></i></span></div>`;});
- html+=`<div class="row"><span class="tag">Inferred fields were computed, not collected. Nothing you consented to covers them.</span><span></span></div>`;
- $("#profile").innerHTML=html;$("#profCount").textContent=`${act.length} sources · ${cnt} inferences`;
- $("#sN").value=Math.min(250,raw.length*18);$("#sN").dispatchEvent(new Event("input"));
-}
-$("#sources").addEventListener("click",e=>{const b=e.target.closest(".src");if(!b)return;const id=b.dataset.id;on.has(id)?on.delete(id):on.add(id);renderSources();renderGraph();renderProfile();});
-
-/* ================= 03 PRICING MODEL ================= */
-const sig=x=>1/(1+Math.exp(-x));
 function priceModel(){
- const p=MODES[mode].price;const n=+$("#sN").value,inc=+$("#sInc").value/100,urg=+$("#sUrg").value/100,alt=+$("#sAlt").value/100,coord=$("#sCoord").checked&&p.coord;
- const w=n/(n+70); // how much the model trusts its estimate of you
- const wtpYou=p.base*(1+0.6*(inc-0.5)+0.45*(urg-0.5)-0.4*(alt-0.5));
- const popShift=coord?1.12:1;
- const kPop=4/(p.base*popShift),kYou=kPop*(1+3*w);
- const centerPop=p.base*popShift,centerYou=p.base*popShift+(wtpYou-p.base)*w;
- const dPop=x=>1-sig(kPop*(x-centerPop)*1.2),dYou=x=>1-sig(kYou*(x-centerYou)*1.2);
- const xs=[];for(let i=0;i<=120;i++)xs.push(p.base*0.3+i*(p.base*1.5)/120);
- let bestPop=xs[0],bPopV=0,bestYou=xs[0],bYouV=0;xs.forEach(x=>{const rp=x*dPop(x),ry=x*dYou(x);if(rp>bPopV){bPopV=rp;bestPop=x;}if(ry>bYouV){bYouV=ry;bestYou=x;}});
- return{xs,dPop,dYou,bestPop,bestYou,p,w,n};
+  return computeModel(
+    +$("#sN").value,
+    +$("#sInc").value/100,
+    +$("#sUrg").value/100,
+    +$("#sAlt").value/100,
+    $("#sCoord").checked,
+    mode
+  );
 }
-function renderPrice(){
- const m=priceModel(),p=m.p;const W=560,H=360,L=50,R=20,T=24,B=44;
- const x0=p.base*0.3,x1=p.base*1.8;const X=v=>L+(v-x0)/(x1-x0)*(W-L-R);const Y=v=>T+(1-v)*(H-T-B);
- const maxRev=Math.max(...m.xs.map(x=>x*m.dYou(x)),...m.xs.map(x=>x*m.dPop(x)));const YR=v=>T+(1-v/maxRev)*(H-T-B);
- const path=(f,Yf)=>m.xs.map((x,i)=>`${i?"L":"M"}${X(x).toFixed(1)},${Yf(f(x)).toFixed(1)}`).join("");
- let s=`<rect width="${W}" height="${H}" fill="#070b12"/>`;
- [0,.25,.5,.75,1].forEach(g=>{s+=`<line x1="${L}" x2="${W-R}" y1="${Y(g)}" y2="${Y(g)}" stroke="#1c2535"/><text x="${L-6}" y="${Y(g)+3}" text-anchor="end" font-family="JetBrains Mono" font-size="9" fill="#8793a8">${Math.round(g*100)}%</text>`;});
- [0.5,1,1.5].forEach(k=>{const v=p.base*k;s+=`<text x="${X(v)}" y="${H-B+16}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">${fmt(v)}</text>`;});
- s+=`<text x="${W/2}" y="${H-8}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">${p.invert?"net price charged (sticker − aid)":"price"} →   ·   y: probability you say yes</text>`;
- s+=`<path d="${path(x=>x*m.dYou(x),YR)}" fill="none" stroke="#ffb13b" stroke-width="1.5" stroke-dasharray="3 3" opacity=".8"/>`;
- s+=`<path d="${path(m.dPop,Y)}" fill="none" stroke="#8793a8" stroke-width="2"/>`;
- s+=`<path d="${path(m.dYou,Y)}" fill="none" stroke="#36e8ff" stroke-width="2.5" style="filter:drop-shadow(0 0 6px rgba(54,232,255,.6))"/>`;
- s+=`<line x1="${X(m.bestPop)}" x2="${X(m.bestPop)}" y1="${T}" y2="${H-B}" stroke="#8793a8" stroke-dasharray="4 4"/><text x="${X(m.bestPop)}" y="${T-8}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">list ${fmt(m.bestPop)}</text>`;
- s+=`<line x1="${X(m.bestYou)}" x2="${X(m.bestYou)}" y1="${T}" y2="${H-B}" stroke="#36e8ff" stroke-width="2"/><circle cx="${X(m.bestYou)}" cy="${Y(m.dYou(m.bestYou))}" r="6" fill="#36e8ff" style="filter:drop-shadow(0 0 8px #36e8ff)"/><text x="${X(m.bestYou)}" y="${T-8}" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="10" fill="#36e8ff">you ${fmt(m.bestYou)}</text>`;
- $("#psvg").innerHTML=s;
- const d=(m.bestYou-m.bestPop)/m.bestPop*100;
- if(p.invert){const sticker=p.base;$("#oList").textContent=fmt(m.bestPop)+p.unit;$("#oListL").textContent="Net price, average admit";$("#oYou").textContent=fmt(m.bestYou)+p.unit;$("#oYouL").textContent=`Your net price · aid offered: ${fmt(Math.max(0,sticker*1.15-m.bestYou))}`;}
- else{$("#oList").textContent=fmt(m.bestPop)+p.unit;$("#oListL").textContent="List price (no data)";$("#oYou").textContent=fmt(m.bestYou)+p.unit;$("#oYouL").textContent="Your price";}
- const dl=$("#oDelta");dl.textContent=(d>=0?"+":"")+d.toFixed(1)+"% vs. the average "+(p.invert?"admitted student":"customer")+(m.n<20?" · with almost no data the model cannot tell you apart":"");dl.className="delta "+(d>0?"up":"down");
- $("#hDelta").textContent=(d>=0?"+":"")+Math.round(d)+"%";
- $("#oNote").innerHTML=m.n<20?"<b>No profile:</b> the model only knows the average "+(p.invert?"admit":"customer")+", so everyone gets the same price. This is what a use restriction on purchased data would preserve.":(p.invert?"<b>Aid optimization is pricing.</b> The model does not ask what you need. It asks the smallest award at which you still enroll, then protects net tuition revenue.":"<b>The more it knows, the closer the price gets to the most you would pay.</b> The profile from 02 is what moved the blue curve.")+($("#sCoord").checked&&p.coord?" <b>Pooling competitors' data</b> shifted the whole market up: that is the coordination theory in the RealPage cases, separate from personalization.":"");
- $("#vN").textContent=m.n;const lv=v=>v<34?"low":v<67?"mid":"high";$("#vInc").textContent=lv(+$("#sInc").value);$("#vUrg").textContent=lv(+$("#sUrg").value);$("#vAlt").textContent=+$("#sAlt").value<34?"few":+$("#sAlt").value<67?"some":"many";
-}
-["sN","sInc","sUrg","sAlt","sCoord"].forEach(id=>$("#"+id).addEventListener("input",renderPrice));
 
-/* ================= 04 INDUSTRIES ================= */
-const IND=[
- {n:"Housing",feeds:["court records","credit file","listing-site pixels","landlord lease data","competitors' lease data (alleged)"],out:"Rent recommendation · approve/deny",
-  ev:[["alleged","Rents at 100,000+ MD apartments set via RealPage; up to $130/mo (pending)","https://www.marylandattorneygeneral.gov/press/2025/011525.pdf"],["verified","TransUnion screening: inaccurate eviction records, $15M (FTC/CFPB 2023)","https://www.ftc.gov/news-events/news/press-releases/2023/10/ftc-cfpb-settlement-require-trans-union-pay-15-million-over-charges-it-failed-ensure-accuracy-tenant"],["gap","One landlord pricing one tenant from her own data: no rule",null]],law:"FCRA · Sherman §1 · local rent-algorithm bans"},
- {n:"Grocery & retail",feeds:["loyalty ID","app SDK location","site pixels","basket history","RTB bidstream"],out:"Audience segments for brands · personalized price",
-  ev:[["verified","~75% of Instacart items at multiple prices; avg gap 13% (Dec. 2025 study)","https://ag.ny.gov/press-release/2026/attorney-general-james-demands-information-instacart-algorithmic-pricing"],["verified","MD HB 895 bars personal data to raise food prices (eff. Oct. 1, 2026)","https://www.gtlaw.com/en/insights/2026/5/maryland-enacts-food-sector-personalized-pricing-law"],["gap","Every non-food category: no rule",null]],law:"MD HB 895 · NY disclosure · FTC §5"},
- {n:"Education",feeds:["PSAT survey (GPA, major, parents' income)","College Board license","250+ purchased household points","engagement scores"],out:"Ability-to-pay estimate · aid award (net price)",
-  ev:[["verified","EAB: 250+ third-party household data points, before FAFSA or for non-filers","https://eab.com/solutions/financial-aid-optimization/"],["verified","College Board licensed NY student data to 1,000+ institutions; $750K (2024)","https://ag.ny.gov/press-release/2024/attorney-general-james-and-nysed-commissioner-rosa-secure-750000-college-board"],["alleged","Judiciary chairs: 'purchased data about hundreds of thousands of students' (Oct. 2025)","https://judiciary.house.gov/sites/evo-subsites/republicans-judiciary.house.gov/files/evo-media-document/2025-10-01-jdj-sf-cg-ml-to-eab-felsenthal-re-ems.pdf"],["gap","Purchased data in aid decisions: no federal or MD rule",null]],law:"FERPA (school records only) · ECOA · nothing on aid pricing"}
+/* ============================================================
+   01 · PAGE LOAD SIMULATION
+   ============================================================ */
+const FIELDS = {
+  url:["site.page","the exact page","hot"],
+  ref:["site.ref","where you came from","hot"],
+  ip:["device.ip","IP address (≈ city)","pii"],
+  ua:["device.ua","browser, OS, device model",""],
+  scr:["device.w/h","screen size",""],
+  cookie:["cookie","site login cookie","pii"],
+  cid:["client_id","persistent tracker ID","hot"],
+  sess:["session","session timing",""],
+  email:["em (sha256)","hashed email address","pii"],
+  ev:["event","PageView / ViewContent","hot"],
+  fbp:["_fbp","cross-site pixel cookie","hot"],
+  slots:["imp[]","ad slots on page",""],
+  consent:["gdpr_consent","consent string",""],
+  ifa:["device.ifa","advertising ID","pii"],
+  geo:["device.geo.lat/lon","precise location","pii"],
+  uid:["user.id / buyeruid","exchange-assigned user ID","hot"],
+  seg:["user.data.segment","audience segments (in-market: housing)","hot"],
+  canvas:["canvas hash","GPU rendering fingerprint","hot"],
+  fonts:["fonts[]","installed fonts","hot"],
+  tz:["timezone","time zone + language",""],
+  audio:["audio ctx","audio fingerprint","hot"]
+};
+
+/* Each request carries `s` = the scroll stage that fires it. */
+function reqPlan(){
+  const login   = $("#optLogin").checked;
+  const loc     = $("#optLoc").checked;
+  const consent = $("#optConsent").checked;
+  const m = MODES[mode];
+  const R = [];
+
+  R.push({ s:0, t:0, n:m.url.split("/")[0], d:"The page you asked for", c:"fp",
+    f:["url","ip","ua","scr","cookie"],
+    note:"First party. Needed to render the page. The only request you intended." });
+
+  const tag = consent ? 650 : 140;
+
+  R.push({ s:1, t:tag, n:"Tag manager", d:"Loads other companies' code", c:"tp",
+    f:["url","ref","cid"],
+    note:"A loader whose only job is to inject other trackers. One line in the page becomes a dozen requests." });
+
+  R.push({ s:2, t:tag+60, n:"Analytics", d:"Page view, session, client ID", c:"tp",
+    f:["url","ref","scr","cid","sess"],
+    note:"Assigns you a persistent client ID that follows you across visits." });
+
+  R.push({ s:2, t:tag+120, n:"Social pixel", d:"Event + cross-site cookie" + (login ? " + hashed email" : ""), c:"tp",
+    f:["url","ev","fbp"].concat(login ? ["email"] : []),
+    note: login
+      ? "Because you are logged in, the pixel can send a hash of your email. That links this visit to your social profile and to every other site where you used that email."
+      : "Without a login the pixel still sets a cross-site cookie that recognizes you on every site carrying the same pixel." });
+
+  R.push({ s:3, t:tag+190, n:"Header-bidding wrapper", d:"Packages your profile for auction", c:"tp",
+    f:["url","slots","consent","cid"],
+    note:"Builds the bid request: everything known about you and the page, formatted for ad exchanges." });
+
+  ["Exchange A","Exchange B","Exchange C"].forEach((e,i) => {
+    R.push({ s:4, t:tag+240+i*70, n:e, d:"Bid request → bidders", c:"bid", fan:11+i*3,
+      f:["url","ref","ip","ua","ifa","uid","seg"].concat(loc ? ["geo"] : []),
+      note:"OpenRTB bid request. Broadcast to every bidder on the exchange. One wins and shows an ad; every other bidder keeps the data. " +
+           (loc ? "Includes precise lat/lon because location was allowed." : "No GPS, but the IP still resolves to a city.") });
+  });
+
+  R.push({ s:5, t:tag+560, n:"Winning ad + verification", d:"Creative, viewability, 3 more trackers", c:"tp",
+    f:["url","ip","ua","cid"],
+    note:"The ad itself loads its own measurement scripts. Each is another company." });
+
+  R.push({ s:6, t:tag+700, n:"Fingerprint script", d:"Identifies you without any cookie", c:"fpr",
+    f:["canvas","fonts","tz","audio","ua","scr"],
+    note:"Canvas, font and audio fingerprinting recognize this browser after cookies are cleared. The FTC has named this class of technique in its tracking enforcement." });
+
+  R.push({ s:6, t:tag+820, n:"Data broker beacon", d:"Appends this visit to your file", c:"fpr",
+    f:["cid","ifa","seg"].concat(login ? ["email"] : []),
+    note:"A broker that bought a seat as a bidder, or runs a pixel of its own, writes this page into a profile it will license later." });
+
+  return R;
+}
+
+/* --- canvas state --- */
+let selReq = null, plan = [], fired = 0, companies = 0, bidders = 0;
+let fieldSet = new Set(), raf = null, t0 = 0, playing = false;
+let nodes = [], packets = [], W = 0, H = 0;
+let activeStage = -1, lastEnteredStage = -1;
+
+const cv  = $("#cv");
+const ctx = cv.getContext("2d");
+
+function sizeCanvas(){
+  const r = $("#net").getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  W = cv.width  = Math.round(r.width  * devicePixelRatio);
+  H = cv.height = Math.round(r.height * devicePixelRatio);
+}
+if (window.ResizeObserver) new ResizeObserver(() => { sizeCanvas(); if (!playing) drawNet(performance.now()); }).observe($("#net"));
+
+const COL = { fp:"#7b96ff", tp:"#36e8ff", bid:"#ffb13b", fpr:"#ff4f63" };
+
+function addNode(label, c, ring, parent){
+  const n = { label, c, ring, parent, x:0, y:0, born:performance.now() };
+  const cx = W/2, cy = H/2;
+  const r = ring === 0 ? 0 : ring === 1 ? Math.min(W,H)*.27 : Math.min(W,H)*.44;
+  if (ring === 0){ n.x = cx; n.y = cy; }
+  else {
+    const k = nodes.filter(m => m.ring === ring).length;
+    const a = -Math.PI/2 + k*(ring === 1 ? .78 : .21);
+    n.x = cx + Math.cos(a)*r;
+    n.y = cy + Math.sin(a)*r;
+  }
+  nodes.push(n);
+  return n;
+}
+
+function drawNet(now){
+  if (!W || !H) return;
+  ctx.clearRect(0,0,W,H);
+  const dp = devicePixelRatio;
+
+  nodes.forEach(n => {
+    if (!n.parent) return;
+    ctx.strokeStyle = n.c === "bid" ? "rgba(255,177,59,.25)" : "rgba(54,232,255,.18)";
+    ctx.lineWidth = 1*dp;
+    ctx.beginPath(); ctx.moveTo(n.parent.x, n.parent.y); ctx.lineTo(n.x, n.y); ctx.stroke();
+  });
+
+  if (!RM){
+    packets = packets.filter(p => now - p.t < p.d);
+    packets.forEach(p => {
+      const k = (now - p.t)/p.d;
+      const x = p.a.x + (p.b.x - p.a.x)*k;
+      const y = p.a.y + (p.b.y - p.a.y)*k;
+      ctx.fillStyle = COL[p.c];
+      ctx.shadowColor = COL[p.c];
+      ctx.shadowBlur = 10*dp;
+      ctx.beginPath(); ctx.arc(x, y, 3*dp, 0, 7); ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+  }
+
+  nodes.forEach(n => {
+    if (selReq !== null && n.req === selReq){
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2*dp;
+      ctx.beginPath(); ctx.arc(n.x, n.y, (n.ring === 2 ? 8 : 12)*dp, 0, 7); ctx.stroke();
+    }
+    const age = RM ? 1 : Math.min(1, (now - n.born)/300);
+    const rr = (n.ring === 0 ? 16 : n.ring === 1 ? 7 : 4) * dp * (0.6 + 0.4*age);
+    ctx.fillStyle = n.ring === 0 ? "#7b96ff" : COL[n.c];
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.shadowBlur = (n.ring === 0 ? 22 : 8)*dp;
+    ctx.beginPath(); ctx.arc(n.x, n.y, rr, 0, 7); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    if (n.ring < 2){
+      ctx.fillStyle = "#eef2f8";
+      ctx.font = `${(n.ring === 0 ? 11 : 9)*dp}px JetBrains Mono, monospace`;
+      ctx.textAlign = "center";
+      ctx.fillText(n.label, n.x, n.y + (n.ring === 0 ? 30 : 18)*dp);
+    }
+  });
+}
+
+function tick(now){
+  const t = now - t0;
+  $("#tms").textContent = Math.min(Math.round(t), 9999);
+  while (fired < plan.length && plan[fired].t <= t){
+    fire(plan[fired], fired);
+    fired++;
+  }
+  drawNet(now);
+  if (fired < plan.length || packets.length) raf = requestAnimationFrame(tick);
+  else {
+    playing = false;
+    $("#pageHint").textContent = "click any node ▸";
+    if (selReq === null && plan.length){
+      const bid = plan.findIndex(r => r.c === "bid");
+      if (bid > -1) showPayload(bid);
+    }
+  }
+}
+
+function fire(r, i){
+  const you = nodes[0];
+  if (!you) return;
+  const n = addNode(r.n, r.c, 1, you);
+  n.req = i;
+  companies++;
+  packets.push({ a:you, b:n, t:performance.now(), d: RM ? 0 : 420, c:r.c });
+
+  if (r.fan){
+    for (let k=0; k<r.fan; k++){
+      const b = addNode("Bidder "+(k+1)+" via "+r.n, r.c, 2, n);
+      b.req = i; companies++; bidders++;
+      packets.push({ a:n, b, t:performance.now()+60+k*25, d: RM ? 0 : 380, c:"bid" });
+    }
+  }
+
+  r.f.forEach(f => fieldSet.add(f));
+
+  if (r.n.startsWith("Winning")){
+    $("#ad1").className = "adslot filled"; $("#ad1").textContent = "TARGETED AD";
+    $("#ad2").className = "adslot filled"; $("#ad2").textContent = "TARGETED AD";
+  }
+
+  $("#kReq").textContent = i + 1 + (r.fan || 0);
+  $("#kCo").textContent  = companies;
+  $("#kBid").textContent = bidders;
+  $("#hCompanies").textContent = companies;
+  $("#hFields").textContent    = fieldSet.size;
+  pulse($("#hCompanies")); pulse($("#hFields"));
+
+  const el = document.createElement("button");
+  el.type = "button";
+  el.className = "req";
+  el.dataset.i = i;
+  el.innerHTML =
+    `<span class="t">${Math.round(r.t)}ms</span>` +
+    `<span class="n">${r.n}${r.fan ? ` <span style="color:var(--warn)">×${r.fan}</span>` : ""}` +
+    `<small>${r.d}</small></span>` +
+    `<span class="c ${{fp:"1st",tp:"3rd",bid:"RTB",fpr:"ID"}[r.c]}">${{fp:"1st",tp:"3rd",bid:"RTB",fpr:"ID"}[r.c]}</span>`;
+  $("#log").appendChild(el);
+  $("#log").scrollTop = $("#log").scrollHeight;
+}
+
+let pulseTimer = null;
+function pulse(el){
+  if (RM) return;
+  el.classList.add("pulse");
+  clearTimeout(pulseTimer);
+  pulseTimer = setTimeout(() => el.classList.remove("pulse"), 500);
+}
+
+function showPayload(i){
+  selReq = i;
+  if (!playing) drawNet(performance.now());
+  $$(".req").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
+  const r = plan[i];
+  if (!r) return;
+  const lines = r.f.map(f => {
+    const d = FIELDS[f];
+    return `<span class="k">${d[0].padEnd(22)}</span> <span class="v ${d[2]}">${d[1]}</span>`;
+  }).join("\n");
+  $("#payload").innerHTML =
+    `<span class="cm">// ${r.n}${r.fan ? ` → ${r.fan} bidders received this` : ""}</span>\n` +
+    lines + `\n\n<span class="cm">// ${r.note}</span>`;
+}
+
+function resetSim(){
+  cancelAnimationFrame(raf);
+  playing = false; fired = 0; companies = 0; bidders = 0;
+  fieldSet = new Set(); nodes = []; packets = [];
+  activeStage = -1; selReq = null;
+  $("#log").innerHTML = "";
+  $("#kReq").textContent = 0; $("#kCo").textContent = 0; $("#kBid").textContent = 0;
+  $("#tms").textContent = 0;
+  ["ad1","ad2"].forEach(id => { const a = $("#"+id); a.className = "adslot"; a.textContent = "AD SLOT"; });
+  $("#payload").innerHTML = '<span class="cm">// Rows appear as you scroll. Click one to see what it carried.</span>';
+  $("#url").textContent = MODES[mode].url;
+  $("#pageHint").textContent = "scroll to load ▸";
+  sizeCanvas();
+  addNode("YOU", "fp", 0, null);
+  drawNet(performance.now());
+}
+
+function fireTo(stage){
+  if (stage < 0) return;
+  plan = reqPlan();
+  let any = false;
+  while (fired < plan.length && plan[fired].s <= stage){
+    fire(plan[fired], fired);
+    fired++; any = true;
+  }
+  if (any && !playing){
+    playing = true;
+    t0 = performance.now() - (plan[Math.max(0, fired-1)].t || 0) * 0;
+    raf = requestAnimationFrame(tick);
+  }
+}
+
+function replay(){
+  const target = lastEnteredStage;
+  resetSim();
+  fireTo(target);
+}
+
+/* --- scroll observer for the 7 steps --- */
+const stepObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    e.target.classList.toggle("in", e.isIntersecting);
+    if (!e.isIntersecting) return;
+    const stage = +e.target.dataset.stage;
+    lastEnteredStage = stage;
+    if (stage > activeStage){
+      activeStage = stage;
+      fireTo(stage);
+    }
+  });
+}, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+
+$$(".step").forEach(s => stepObs.observe(s));
+
+/* --- controls --- */
+$("#replay").addEventListener("click", replay);
+$("#pageArea").addEventListener("click", replay);
+["optLogin","optLoc","optConsent"].forEach(id => {
+  $("#"+id).addEventListener("change", () => replay());
+});
+$("#log").addEventListener("click", e => {
+  const b = e.target.closest(".req");
+  if (b) showPayload(+b.dataset.i);
+});
+
+/* --- canvas hit-testing --- */
+const netTip = $("#netTip");
+function hit(e){
+  const r = cv.getBoundingClientRect();
+  const x = (e.clientX - r.left) * devicePixelRatio;
+  const y = (e.clientY - r.top)  * devicePixelRatio;
+  let best = null, bd = 1e9;
+  nodes.forEach(n => {
+    const d = Math.hypot(n.x - x, n.y - y);
+    if (d < bd){ bd = d; best = n; }
+  });
+  return bd < 22*devicePixelRatio ? { n:best, px:e.clientX - r.left, py:e.clientY - r.top, w:r.width } : null;
+}
+cv.addEventListener("mousemove", e => {
+  const h = hit(e);
+  if (!h){ netTip.hidden = true; cv.style.cursor = "crosshair"; return; }
+  cv.style.cursor = "pointer";
+  const lab = h.n.ring === 0 ? "You · the browser" : h.n.label;
+  const r = h.n.req != null ? plan[h.n.req] : null;
+  netTip.innerHTML = `<b>${lab}</b>${r ? `<br>${r.f.length} fields · click to inspect` : ""}`;
+  netTip.style.left = h.px + "px";
+  netTip.style.top  = h.py + "px";
+  /* flip near the right edge so it never runs off-canvas */
+  netTip.style.transform = h.px > h.w * 0.7 ? "translate(-100%,-130%)" : "translate(-50%,-130%)";
+  netTip.hidden = false;
+});
+cv.addEventListener("mouseleave", () => { netTip.hidden = true; });
+cv.addEventListener("click", e => {
+  const h = hit(e);
+  if (!h){ replay(); return; }
+  if (h.n.req != null) showPayload(h.n.req);
+  else replay();
+});
+
+/* ============================================================
+   02 · PROFILE BUILDER
+   ============================================================ */
+const SVGI = {
+  browser:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>',
+  card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>',
+  pub:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 21h18M5 21V9l7-5 7 5v12M10 21v-6h4v6"/></svg>',
+  court:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M5 7l7-4 7 4M4 11l3 6h-6zM17 11l3 6h-6z"/></svg>',
+  test:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12l2 2 4-4M9 17h6"/></svg>'
+};
+const SRC = [
+  { id:"browser", ic:"browser", n:"Browser trackers",  k:["email#","tracker ID"],  fields:["email#","in-market: housing","pages viewed","device"], note:"from 01" },
+  { id:"phone",   ic:"phone",   n:"Phone app SDKs",    k:["ad ID"],                fields:["ad ID","lat/lon history","apps installed"],            note:"RTB bidstream" },
+  { id:"loyalty", ic:"card",    n:"Loyalty card",      k:["email#","address"],     fields:["name","address","email#","purchases 3 yrs","brands"],   note:"grocer / retailer" },
+  { id:"public",  ic:"pub",     n:"Public records",    k:["address"],              fields:["address","home value","voter reg","age range"],        note:"county + state" },
+  { id:"court",   ic:"court",   n:"Court records",     k:["name+DOB"],             fields:["name","DOB","eviction filing (dismissed)"],             note:"bought by screeners" },
+  { id:"test",    ic:"test",    n:"Standardized test", k:["name+DOB","address"],   fields:["GPA","intended major","parents' income (self-reported)"], note:"education mode" }
 ];
-const PL={verified:"Verified",alleged:"Alleged",gap:"No law"};
-const IKEY={"Housing":"housing","Grocery & retail":"retail","Education":"education"};
-function renderInd(){$("#ind3").innerHTML=IND.map(i=>`<div class="card" data-m="${IKEY[i.n]}" data-cur="${IKEY[i.n]===mode?1:0}" tabindex="0" role="button" aria-label="Run the simulation in ${i.n} mode"><h3>${i.n}<span class="btn go">${IKEY[i.n]===mode?"Running ✓":"Run this ▸"}</span></h3><div><span class="eyebrow">Feeds the profile</span><div class="chips" style="margin-top:4px">${i.feeds.map(f=>`<span class="chip">${f}</span>`).join("")}</div></div><div><span class="eyebrow">Model output</span><p style="font-weight:700;font-size:.86rem">${i.out}</p></div><div class="ev">${i.ev.map(e=>`<div class="e"><span class="pill p-${e[0]}">${PL[e[0]]}</span><span>${e[1]}</span>${e[2]?`<a href="${e[2]}" target="_blank" rel="noopener">source ↗</a>`:""}</div>`).join("")}</div><div><span class="eyebrow">Law</span><p class="mono" style="font-size:.7rem;color:var(--muted)">${i.law}</p></div></div>`).join("");}
+const INFER = [
+  { n:"Estimated household income", need:["public","loyalty"], any:true, v:"$64–78k", why:"home value + purchase mix" },
+  { n:"Price sensitivity",          need:["loyalty","browser"], any:true, v:"Low (buys brand names)", why:"basket composition" },
+  { n:"Life stage",                 need:["loyalty"], v:"Likely parent of a young child", why:"purchases" },
+  { n:"In-market for housing",      need:["browser","phone"], any:true, v:"High (moving within 60 days)", why:"listing visits + location history" },
+  { n:"Housing risk flag",          need:["court"], v:"Eviction filing present", why:"even though dismissed" },
+  { n:"Ability to pay (pre-FAFSA)", need:["test","public"], v:"Pell unlikely · 'affordability risk: low'", why:"income estimate + self-reported income + home value" }
+];
 
-/* ================= MODE SWITCH ================= */
-function setMode(k){
- mode=k;const m=MODES[k];document.querySelectorAll("#seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===k));
- $("#s1Title").textContent=m.s1;$("#s1Sub").textContent=m.s1sub;$("#url").textContent=m.url;
- $("#lInc").textContent=m.price.inc;$("#lUrg").textContent=m.price.urg;$("#lAlt").textContent=m.price.alt;$("#coordWrap").style.display=m.price.coord?"flex":"none";$("#sCoord").checked=false;
- $("#s3Title").textContent=k==="education"?"How an algorithm turns the profile into your aid letter":`How an algorithm turns the profile into ${m.price.label}`;
- $("#howto").innerHTML=k==="education"?"In education the 'price' is net tuition after aid. The vendor's model estimates ability to pay from purchased data, then finds the award that maximizes enrollment × revenue. Slide 'ability to pay' up and watch the aid shrink.":k==="housing"?"Two separate mechanisms: personalization (the sliders) and coordination (the checkbox). The lawsuits are about the second. Nothing currently regulates the first.":"Slide 'data points' from 0 to 250 first. Then change what the data says about you.";
- if(k==="education"&&!on.has("test"))on.add("test");
- resetSim();renderSources();renderGraph();renderProfile();renderPrice();renderInd();$("#pageHint").textContent="click to load ▸";
+let on = new Set(["browser"]);
+
+function visibleSources(){
+  return SRC.filter(s => mode === "education" || s.id !== "test");
 }
-$("#seg").innerHTML=Object.keys(MODES).map(k=>`<button type="button" data-m="${k}" aria-pressed="${k===mode}">${MODES[k].name}</button>`).join("");
-$("#seg").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setMode(b.dataset.m);});
 
+function renderSources(){
+  const list = visibleSources();
+  $("#sources").innerHTML = list.map(s =>
+    `<button type="button" class="src" data-id="${s.id}" aria-pressed="${on.has(s.id)}">` +
+      `<span class="ic">${SVGI[s.ic]}</span>` +
+      `<span><b>${s.n}</b><small>keys: ${s.k.join(" · ")} · ${s.note}</small></span>` +
+    `</button>`).join("");
+}
 
-/* ===== canvas hit-test ===== */
-const netTip=$("#netTip");
-function hit(e){const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*devicePixelRatio,y=(e.clientY-r.top)*devicePixelRatio;let best=null,bd=1e9;nodes.forEach(n=>{const d=Math.hypot(n.x-x,n.y-y);if(d<bd){bd=d;best=n;}});return bd<22*devicePixelRatio?{n:best,px:e.clientX-r.left,py:e.clientY-r.top}:null;}
-cv.addEventListener("mousemove",e=>{const h=hit(e);if(!h){netTip.hidden=true;cv.style.cursor="crosshair";return;}cv.style.cursor="pointer";const n=h.n;const lab=n.ring===0?"You · the browser":n.label;const r=n.req!=null?plan[n.req]:null;netTip.innerHTML=`<b>${lab}</b>${r?`<br>${r.f.length} fields · click to inspect`:""}`;netTip.style.left=h.px+"px";netTip.style.top=h.py+"px";netTip.hidden=false;});
-cv.addEventListener("mouseleave",()=>netTip.hidden=true);
-cv.addEventListener("click",e=>{const h=hit(e);if(!h){if(!plan.length||!fired)startLoad();return;}if(h.n.req!=null)showPayload(h.n.req);else startLoad();});
+function renderGraph(){
+  const act = visibleSources().filter(s => on.has(s.id));
+  const cx = 400, cy = 210;
+  let out = "";
+  const keys = {};
+  act.forEach(s => s.k.forEach(k => { keys[k] = (keys[k]||0) + 1; }));
 
-/* ===== graph source boxes + profile rows ===== */
-$("#gsvg").addEventListener("click",e=>{const g=e.target.closest(".srcbox");if(!g)return;const id=g.dataset.id;on.has(id)?on.delete(id):on.add(id);renderSources();renderGraph();renderProfile();});
-$("#profile").addEventListener("click",e=>{const r=e.target.closest(".row[data-need]");if(!r)return;r.dataset.need.split(",").forEach(id=>on.add(id));renderSources();renderGraph();renderProfile();});
+  act.forEach((s,i) => {
+    const y = 40 + i*(340/Math.max(1, act.length-1 || 1));
+    const x = 70;
+    s.k.forEach(k => {
+      const shared = keys[k] > 1;
+      const p = `M${x+90},${y} C${x+200},${y} ${cx-150},${cy} ${cx-60},${cy}`;
+      out += `<path d="${p}" fill="none" stroke="${shared ? '#36e8ff' : '#2f4160'}" stroke-width="${shared ? 2 : 1}" stroke-dasharray="${shared ? '' : '4 4'}" opacity="${shared ? .9 : .6}"/>`;
+      if (shared && !RM)
+        out += `<circle r="3" fill="#36e8ff"><animateMotion dur="${2+i*.3}s" repeatCount="indefinite" path="${p}"/></circle>`;
+    });
+    out += `<g class="srcbox" data-id="${s.id}" role="button" tabindex="0"><title>Click to remove ${s.n}</title>` +
+      `<rect x="${x-60}" y="${y-18}" width="150" height="36" rx="5" fill="#141b28" stroke="#36e8ff"/>` +
+      `<text x="${x+15}" y="${y-3}" text-anchor="middle" font-family="Manrope" font-weight="700" font-size="11" fill="#eef2f8">${s.n}</text>` +
+      `<text x="${x+15}" y="${y+11}" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5" fill="#8793a8">${s.k.join(" · ")}</text></g>`;
+  });
 
-/* ===== chart crosshair ===== */
-const chartTip=$("#chartTip");
-$("#psvg").addEventListener("mousemove",e=>{const m=priceModel(),p=m.p,svg=$("#psvg"),r=svg.getBoundingClientRect();const vx=(e.clientX-r.left)/r.width*560;if(vx<50||vx>540){chartTip.hidden=true;return;}const x0=p.base*0.3,x1=p.base*1.8,price=x0+(vx-50)/(490)*(x1-x0);const py=m.dYou(price),pa=m.dPop(price);
- let cross=svg.querySelector("#xh");if(!cross){cross=document.createElementNS("http://www.w3.org/2000/svg","line");cross.id="xh";cross.setAttribute("stroke","#eef2f8");cross.setAttribute("stroke-dasharray","2 3");cross.setAttribute("y1",24);cross.setAttribute("y2",316);svg.appendChild(cross);}cross.setAttribute("x1",vx);cross.setAttribute("x2",vx);
- chartTip.innerHTML=`at ${fmt(price)}${p.unit}<br><span style="color:#36e8ff">you: ${Math.round(py*100)}% yes · revenue ${fmt(price*py)}</span><br><span style="color:#8793a8">average: ${Math.round(pa*100)}% yes</span>`;chartTip.style.left=(e.clientX-r.left)+"px";chartTip.style.top=(e.clientY-r.top)+"px";chartTip.hidden=false;});
-$("#psvg").addEventListener("mouseleave",()=>{chartTip.hidden=true;const c=$("#xh");if(c)c.remove();});
-$("#psvg").addEventListener("click",()=>{const n=$("#sN");n.value=+n.value<100?250:0;renderPrice();});
+  visibleSources().filter(s => !on.has(s.id)).forEach((s,i) => {
+    const x = 470, y = 30 + i*30;
+    out += `<g class="srcbox ghost" data-id="${s.id}" role="button" tabindex="0"><title>Click to add ${s.n}</title>` +
+      `<rect x="${x-20}" y="${y-11}" width="68" height="22" rx="4" fill="#0e131d"/>` +
+      `<text x="${x+14}" y="${y+3}" text-anchor="middle" font-family="JetBrains Mono" font-size="7.5" fill="#8793a8">+ ${s.n.split(" ")[0]}</text></g>`;
+  });
 
-/* ===== presets ===== */
-const PRE=[[0,50,50,70],[180,20,20,90],[220,90,90,15],null];
-$("#presets").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const k=+b.dataset.p;if(PRE[k]){[$("#sN").value,$("#sInc").value,$("#sUrg").value,$("#sAlt").value]=PRE[k];}else{renderProfile();}renderPrice();});
+  out += `<circle cx="${cx}" cy="${cy}" r="${48 + act.length*5}" fill="rgba(54,232,255,.08)" stroke="#36e8ff" stroke-width="2"/>`;
+  out += `<text x="${cx}" y="${cy-6}" text-anchor="middle" font-family="Unbounded" font-weight="800" font-size="13" fill="#eef2f8">PERSON A</text>`;
+  out += `<text x="${cx}" y="${cy+12}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#36e8ff">${act.length} source${act.length === 1 ? "" : "s"} joined</text>`;
 
-/* ===== navigation: any [data-go] scrolls ===== */
-document.addEventListener("click",e=>{const g=e.target.closest("[data-go]");if(!g)return;document.getElementById(g.dataset.go).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});});
-document.addEventListener("keydown",e=>{if(e.key==="Enter"){const g=e.target.closest(".stat[data-go]");if(g)g.click();}});
+  const shared = Object.entries(keys).filter(e => e[1] > 1).map(e => e[0]);
+  out += `<text x="${cx}" y="${cy + 70 + act.length*5}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">` +
+    `${shared.length ? "match keys: " + shared.join(", ") : "no shared keys yet — records stay separate"}</text>`;
 
-/* ===== industry cards switch mode ===== */
-$("#ind3").addEventListener("click",e=>{if(e.target.closest("a"))return;const c=e.target.closest(".card[data-m]");if(!c)return;setMode(c.dataset.m);document.getElementById("s1").scrollIntoView({behavior:"smooth"});setTimeout(startLoad,500);});
+  $("#gsvg").innerHTML = out;
+}
 
-renderInd();setMode("general");
+function renderProfile(){
+  const act = visibleSources().filter(s => on.has(s.id));
+  const ids = new Set(act.map(s => s.id));
+  const raw = [];
+  act.forEach(s => s.fields.forEach(f => raw.push(f)));
+
+  let html = `<div class="row"><span><span class="lab">Collected</span>${raw.length ? raw.join(" · ") : "—"}</span>` +
+             `<span class="tag src">${raw.length} fields</span></div>`;
+
+  let cnt = 0;
+  INFER.forEach(f => {
+    if (mode !== "education" && f.n.startsWith("Ability")) return;
+    if (mode === "education" && f.n.startsWith("Housing risk")) return;
+    const have = f.need.filter(n => ids.has(n)).length;
+    const ok = f.any ? have > 0 : have === f.need.length;
+    const conf = ok ? Math.min(100, 45 + have*25 + act.length*4) : 0;
+    if (ok) cnt++;
+    html += `<div class="row inf ${ok ? "" : "off click"}" ${ok ? "" : `data-need="${f.need.join(",")}" title="Click to add the sources this needs"`}>` +
+      `<span><span class="lab">Inferred · ${f.why}</span>${f.n}: <b>${ok ? f.v : `<span class="fix">add ${f.need.join(" + ")} ▸</span>`}</b></span>` +
+      `<span class="conf" title="confidence"><i style="width:${conf}%"></i></span></div>`;
+  });
+
+  html += `<div class="row"><span class="tag">Inferred fields were computed, not collected. Nothing you consented to covers them.</span><span></span></div>`;
+  $("#profile").innerHTML = html;
+  $("#profCount").textContent = `${act.length} sources · ${cnt} inferences`;
+
+  /* Feed the count into section 03 and surface the causal link. */
+  const n = Math.min(250, raw.length * 18);
+  $("#sN").value = n;
+  renderPrice();
+  showLinkNote(raw.length, n);
+}
+
+let linkTimer = null;
+function showLinkNote(fields, n){
+  const el = $("#linkNote");
+  if (!fields){
+    el.classList.remove("on");
+    return;
+  }
+  el.innerHTML = `<span>→</span><span>Section 02 is now feeding <b>${n} data points</b> into the pricing model below.</span>` +
+                 `<button type="button" class="btn" data-go="s3">See the effect ↓</button>`;
+  el.classList.add("on");
+  clearTimeout(linkTimer);
+  linkTimer = setTimeout(() => el.classList.remove("on"), 9000);
+}
+
+function toggleSource(id){
+  on.has(id) ? on.delete(id) : on.add(id);
+  renderSources(); renderGraph(); renderProfile();
+}
+
+$("#sources").addEventListener("click", e => {
+  const b = e.target.closest(".src");
+  if (b) toggleSource(b.dataset.id);
+});
+$("#gsvg").addEventListener("click", e => {
+  const g = e.target.closest(".srcbox");
+  if (g) toggleSource(g.dataset.id);
+});
+$("#gsvg").addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const g = e.target.closest(".srcbox");
+  if (g){ e.preventDefault(); toggleSource(g.dataset.id); }
+});
+$("#profile").addEventListener("click", e => {
+  const r = e.target.closest(".row[data-need]");
+  if (!r) return;
+  r.dataset.need.split(",").forEach(id => on.add(id));
+  renderSources(); renderGraph(); renderProfile();
+});
+
+/* ============================================================
+   03 · PRICING CHART  (single axis, shaded gap band)
+   ============================================================ */
+function renderPrice(){
+  const m = priceModel(), p = m.p;
+  const W = 560, H = 360, L = 56, R = 24, T = 30, B = 56;
+  const x0 = p.base*0.3, x1 = p.base*1.8;
+  const X = v => L + (v - x0)/(x1 - x0) * (W - L - R);
+  const Y = v => T + (1 - v) * (H - T - B);
+  const path = f => m.xs.map((x,i) => `${i ? "L" : "M"}${X(x).toFixed(1)},${Y(f(x)).toFixed(1)}`).join("");
+
+  let s = `<rect width="${W}" height="${H}" fill="#070b12"/>`;
+
+  /* gridlines */
+  [0,.25,.5,.75,1].forEach(g => {
+    s += `<line x1="${L}" x2="${W-R}" y1="${Y(g)}" y2="${Y(g)}" stroke="#1c2535"/>`;
+    s += `<text x="${L-8}" y="${Y(g)+3}" text-anchor="end" font-family="JetBrains Mono" font-size="9" fill="#8793a8">${Math.round(g*100)}%</text>`;
+  });
+  [0.5,1,1.5].forEach(k => {
+    s += `<text x="${X(p.base*k)}" y="${H-B+18}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">${fmt(p.base*k)}</text>`;
+  });
+
+  /* the shaded "gap" band — the whole story in one rectangle */
+  const xa = Math.min(X(m.bestPop), X(m.bestYou));
+  const xb = Math.max(X(m.bestPop), X(m.bestYou));
+  if (xb - xa > 1.5){
+    s += `<rect x="${xa}" y="${T}" width="${xb-xa}" height="${H-T-B}" fill="rgba(54,232,255,.10)"/>`;
+    s += `<text x="${(xa+xb)/2}" y="${T-12}" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="10" fill="#36e8ff">the gap</text>`;
+  }
+
+  /* demand curves */
+  s += `<path d="${path(m.dPop)}" fill="none" stroke="#8793a8" stroke-width="2"/>`;
+  s += `<path d="${path(m.dYou)}" fill="none" stroke="#36e8ff" stroke-width="2.5"/>`;
+
+  /* optima */
+  s += `<line x1="${X(m.bestPop)}" x2="${X(m.bestPop)}" y1="${T}" y2="${H-B}" stroke="#8793a8" stroke-dasharray="4 4"/>`;
+  s += `<line x1="${X(m.bestYou)}" x2="${X(m.bestYou)}" y1="${T}" y2="${H-B}" stroke="#36e8ff" stroke-width="2"/>`;
+  s += `<circle cx="${X(m.bestYou)}" cy="${Y(m.dYou(m.bestYou))}" r="6" fill="#36e8ff"/>`;
+
+  s += `<text x="${X(m.bestPop)}" y="${H-B+34}" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#8793a8">list ${fmt(m.bestPop)}</text>`;
+  s += `<text x="${X(m.bestYou)}" y="${H-B+34}" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="10" fill="#36e8ff">you ${fmt(m.bestYou)}</text>`;
+
+  s += `<text x="${W/2}" y="${H-10}" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#8793a8">` +
+       `${p.invert ? "net price charged (sticker − aid)" : "price"} →   ·   y: probability you say yes</text>`;
+
+  $("#psvg").innerHTML = s;
+
+  /* outputs */
+  const d = (m.bestYou - m.bestPop)/m.bestPop*100;
+  if (p.invert){
+    const sticker = p.base;
+    $("#oList").textContent = fmt(m.bestPop) + p.unit;
+    $("#oListL").textContent = "Net price, average admit";
+    $("#oYou").textContent = fmt(m.bestYou) + p.unit;
+    $("#oYouL").textContent = `Your net price · aid offered: ${fmt(Math.max(0, sticker*1.15 - m.bestYou))}`;
+  } else {
+    $("#oList").textContent = fmt(m.bestPop) + p.unit;
+    $("#oListL").textContent = "List price (no data)";
+    $("#oYou").textContent = fmt(m.bestYou) + p.unit;
+    $("#oYouL").textContent = "Your price";
+  }
+
+  const dl = $("#oDelta");
+  dl.textContent = (d >= 0 ? "+" : "") + d.toFixed(1) + "% vs. the average " + (p.invert ? "admitted student" : "customer") +
+    (m.n < 20 ? " · with almost no data the model cannot tell you apart" : "");
+  dl.className = "delta " + (d > 0 ? "up" : "down");
+  $("#hDelta").textContent = (d >= 0 ? "+" : "") + Math.round(d) + "%";
+
+  $("#oNote").innerHTML = m.n < 20
+    ? `<b>No profile:</b> the model only knows the average ${p.invert ? "admit" : "customer"}, so everyone gets the same price. This is what a use restriction on purchased data would preserve.`
+    : (p.invert
+        ? `<b>Aid optimization is pricing.</b> The model does not ask what you need. It asks the smallest award at which you still enroll, then protects net tuition revenue.`
+        : `<b>The more it knows, the closer the price gets to the most you would pay.</b> The profile from section 02 is what moved the blue curve.`) +
+      ($("#sCoord").checked && p.coord
+        ? ` <b>Pooling competitors' data</b> shifted the whole market up: that is the coordination theory in the RealPage cases, separate from personalization.`
+        : "");
+
+  const lv = v => v < 34 ? "low" : v < 67 ? "mid" : "high";
+  $("#vN").textContent   = m.n;
+  $("#vInc").textContent = lv(+$("#sInc").value);
+  $("#vUrg").textContent = lv(+$("#sUrg").value);
+  $("#vAlt").textContent = +$("#sAlt").value < 34 ? "few" : +$("#sAlt").value < 67 ? "some" : "many";
+}
+
+["sN","sInc","sUrg","sAlt","sCoord"].forEach(id =>
+  $("#"+id).addEventListener("input", renderPrice));
+
+/* chart crosshair */
+const chartTip = $("#chartTip");
+$("#psvg").addEventListener("mousemove", e => {
+  const m = priceModel(), p = m.p, svg = $("#psvg"), r = svg.getBoundingClientRect();
+  const vx = (e.clientX - r.left)/r.width * 560;
+  if (vx < 56 || vx > 536){ chartTip.hidden = true; return; }
+  const x0 = p.base*0.3, x1 = p.base*1.8;
+  const price = x0 + (vx - 56)/480 * (x1 - x0);
+  const py = m.dYou(price), pa = m.dPop(price);
+  let cross = svg.querySelector("#xh");
+  if (!cross){
+    cross = document.createElementNS("http://www.w3.org/2000/svg","line");
+    cross.id = "xh";
+    cross.setAttribute("stroke","#eef2f8");
+    cross.setAttribute("stroke-dasharray","2 3");
+    cross.setAttribute("y1","30"); cross.setAttribute("y2","304");
+    svg.appendChild(cross);
+  }
+  cross.setAttribute("x1", vx); cross.setAttribute("x2", vx);
+  chartTip.innerHTML =
+    `at ${fmt(price)}${p.unit}<br><span style="color:#36e8ff">you: ${Math.round(py*100)}% yes</span>` +
+    `<br><span style="color:#8793a8">average: ${Math.round(pa*100)}% yes</span>`;
+  chartTip.style.left = (e.clientX - r.left) + "px";
+  chartTip.style.top  = (e.clientY - r.top) + "px";
+  chartTip.style.transform = (e.clientX - r.left) > r.width*0.7 ? "translate(-100%,-130%)" : "translate(-50%,-130%)";
+  chartTip.hidden = false;
+});
+$("#psvg").addEventListener("mouseleave", () => {
+  chartTip.hidden = true;
+  const c = $("#xh"); if (c) c.remove();
+});
+$("#psvg").addEventListener("click", () => {
+  const n = $("#sN");
+  n.value = +n.value < 100 ? 250 : 0;
+  renderPrice();
+});
+
+/* presets */
+const PRE = [[0,50,50,70],[180,20,20,90],[220,90,90,15],null];
+$("#presets").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  const k = +b.dataset.p;
+  if (PRE[k]){
+    $("#sN").value   = PRE[k][0];
+    $("#sInc").value = PRE[k][1];
+    $("#sUrg").value = PRE[k][2];
+    $("#sAlt").value = PRE[k][3];
+  } else {
+    renderProfile();  /* "From my profile" — pull the count from section 02 */
+  }
+  renderPrice();
+});
+
+/* ============================================================
+   04 · INDUSTRIES
+   ============================================================ */
+const IND = [
+  { n:"Housing",
+    feeds:["court records","credit file","listing-site pixels","landlord lease data","competitors' lease data (alleged)"],
+    out:"Rent recommendation · approve/deny",
+    ev:[
+      ["alleged","Rents at 100,000+ MD apartments set via RealPage; up to $130/mo (pending)","https://www.marylandattorneygeneral.gov/press/2025/011525.pdf"],
+      ["verified","TransUnion screening: inaccurate eviction records, $15M (FTC/CFPB 2023)","https://www.ftc.gov/news-events/news/press-releases/2023/10/ftc-cfpb-settlement-require-trans-union-pay-15-million-over-charges-it-failed-ensure-accuracy-tenant"],
+      ["gap","One landlord pricing one tenant from her own data: no rule",null]
+    ],
+    law:"FCRA · Sherman §1 · local rent-algorithm bans" },
+  { n:"Grocery & retail",
+    feeds:["loyalty ID","app SDK location","site pixels","basket history","RTB bidstream"],
+    out:"Audience segments for brands · personalized price",
+    ev:[
+      ["verified","~75% of Instacart items at multiple prices; avg gap 13% (Dec. 2025 study)","https://ag.ny.gov/press-release/2026/attorney-general-james-demands-information-instacart-algorithmic-pricing"],
+      ["verified","MD HB 895 bars personal data to raise food prices (eff. Oct. 1, 2026)","https://www.gtlaw.com/en/insights/2026/5/maryland-enacts-food-sector-personalized-pricing-law"],
+      ["gap","Every non-food category: no rule",null]
+    ],
+    law:"MD HB 895 · NY disclosure · FTC §5" },
+  { n:"Education",
+    feeds:["PSAT survey (GPA, major, parents' income)","College Board license","250+ purchased household points","engagement scores"],
+    out:"Ability-to-pay estimate · aid award (net price)",
+    ev:[
+      ["verified","EAB: 250+ third-party household data points, before FAFSA or for non-filers","https://eab.com/solutions/financial-aid-optimization/"],
+      ["verified","College Board licensed NY student data to 1,000+ institutions; $750K (2024)","https://ag.ny.gov/press-release/2024/attorney-general-james-and-nysed-commissioner-rosa-secure-750000-college-board"],
+      ["alleged","Judiciary chairs: 'purchased data about hundreds of thousands of students' (Oct. 2025)","https://judiciary.house.gov/sites/evo-subsites/republicans-judiciary.house.gov/files/evo-media-document/2025-10-01-jdj-sf-cg-ml-to-eab-felsenthal-re-ems.pdf"],
+      ["gap","Purchased data in aid decisions: no federal or MD rule",null]
+    ],
+    law:"FERPA (school records only) · ECOA · nothing on aid pricing" }
+];
+const PL = { verified:"Verified", alleged:"Alleged", gap:"No law" };
+const IKEY = { "Housing":"housing", "Grocery & retail":"retail", "Education":"education" };
+
+function renderInd(){
+  $("#ind3").innerHTML = IND.map(i => {
+    const cur = IKEY[i.n] === mode;
+    return `<div class="card" data-m="${IKEY[i.n]}" data-cur="${cur ? 1 : 0}" tabindex="0" role="button" ` +
+      `aria-label="Run the simulation in ${i.n} mode">` +
+      `<h3>${i.n}<span class="btn go">${cur ? "Running ✓" : "Run this ▸"}</span></h3>` +
+      `<div><span class="eyebrow">Feeds the profile</span><div class="chips" style="margin-top:4px">` +
+        i.feeds.map(f => `<span class="chip">${f}</span>`).join("") + `</div></div>` +
+      `<div><span class="eyebrow">Model output</span><p style="font-weight:700;font-size:.86rem">${i.out}</p></div>` +
+      `<div class="ev">` + i.ev.map(e =>
+        `<div class="e"><span class="pill p-${e[0]}">${PL[e[0]]}</span><span>${e[1]}</span>` +
+        (e[2] ? `<a href="${e[2]}" target="_blank" rel="noopener">source ↗</a>` : "") + `</div>`).join("") + `</div>` +
+      `<div><span class="eyebrow">Law</span><p class="mono" style="font-size:.7rem;color:var(--muted)">${i.law}</p></div></div>`;
+  }).join("");
+}
+
+/* ============================================================
+   MODE SWITCH
+   ============================================================ */
+function setMode(k){
+  mode = k;
+  const m = MODES[k];
+  $$("#seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === k)));
+
+  $("#s1Title").textContent = m.s1;
+  $("#s1Sub").textContent   = m.s1sub;
+  $("#url").textContent     = m.url;
+  $("#lInc").textContent    = m.price.inc;
+  $("#lUrg").textContent    = m.price.urg;
+  $("#lAlt").textContent    = m.price.alt;
+  $("#coordWrap").style.display = m.price.coord ? "flex" : "none";
+  $("#sCoord").checked = false;
+
+  $("#s3Title").textContent = k === "education"
+    ? "How an algorithm turns the profile into your aid letter"
+    : `How an algorithm turns the profile into ${m.price.label}`;
+
+  $("#howto").innerHTML = k === "education"
+    ? "In education the 'price' is net tuition after aid. The vendor's model estimates ability to pay from purchased data, then finds the award that maximizes enrollment × revenue. Slide 'ability to pay' up and watch the aid shrink."
+    : k === "housing"
+      ? "Two separate mechanisms: personalization (the sliders) and coordination (the checkbox). The lawsuits are about the second. Nothing currently regulates the first."
+      : "Slide 'data points' from 0 to 250 first. Then change what the data says about you.";
+
+  if (k === "education" && !on.has("test")) on.add("test");
+  if (k !== "education" && on.has("test")) on.delete("test");
+
+  renderSources(); renderGraph(); renderProfile();
+  renderInd();
+  lastEnteredStage = -1;
+  resetSim();
+}
+
+$("#seg").innerHTML = Object.keys(MODES)
+  .map(k => `<button type="button" data-m="${k}" aria-pressed="${k === mode}">${MODES[k].name}</button>`).join("");
+$("#seg").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (b) setMode(b.dataset.m);
+});
+
+$("#ind3").addEventListener("click", e => {
+  if (e.target.closest("a")) return;
+  const c = e.target.closest(".card[data-m]");
+  if (!c) return;
+  setMode(c.dataset.m);
+  document.getElementById("s1").scrollIntoView({ behavior: RM ? "auto" : "smooth" });
+});
+$("#ind3").addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const c = e.target.closest(".card[data-m]");
+  if (!c) return;
+  e.preventDefault();
+  c.click();
+});
+
+/* ============================================================
+   NAVIGATION · PROGRESS · REVEALS
+   ============================================================ */
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]");
+  if (!g) return;
+  document.getElementById(g.dataset.go)
+    .scrollIntoView({ behavior: RM ? "auto" : "smooth" });
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const g = e.target.closest(".stat[data-go]");
+  if (g){ e.preventDefault(); g.click(); }
+});
+
+/* reading progress bar */
+const progress = $("#progress");
+let pTick = false;
+function onScroll(){
+  if (pTick) return;
+  pTick = true;
+  requestAnimationFrame(() => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + "%";
+    pTick = false;
+  });
+}
+window.addEventListener("scroll", onScroll, { passive:true });
+onScroll();
+
+/* section reveals */
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("in"); });
+}, { rootMargin: "0px 0px -12% 0px" });
+$$(".reveal").forEach(el => revealObs.observe(el));
+
+/* nav current-section highlight */
+const navObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    $$(".nav a").forEach(a => a.setAttribute("aria-current", String(a.dataset.sec === e.target.id)));
+  });
+}, { rootMargin: "-40% 0px -55% 0px" });
+["s1","s2","s3","s4"].forEach(id => { const el = document.getElementById(id); if (el) navObs.observe(el); });
+
+/* ============================================================
+   BOOT — preview stats, then init
+   ============================================================ */
+function previewStats(){
+  /* Run the default simulation headlessly so the hero numbers are real, not invented. */
+  const p = reqPlan();
+  let co = 0;
+  const fields = new Set();
+  p.forEach(r => { co += 1 + (r.fan || 0); r.f.forEach(f => fields.add(f)); });
+
+  const md = computeModel(Math.min(250, fields.size * 18), 0.5, 0.5, 0.7, false, mode);
+  const delta = Math.round((md.bestYou - md.bestPop)/md.bestPop*100);
+  return { co, fields: fields.size, delta };
+}
+
+function animateStat(el, to, suffix){
+  if (RM){ el.textContent = (suffix || "") + to; return; }
+  const dur = 900, start = performance.now();
+  (function step(t){
+    const k = Math.min(1, (t - start)/dur);
+    const e = 1 - Math.pow(1 - k, 3);
+    el.textContent = (suffix && to >= 0 ? "+" : "") + Math.round(to * e) + (suffix ? "%" : "");
+    if (k < 1) requestAnimationFrame(step);
+  })(performance.now());
+}
+
+function boot(){
+  renderInd();
+  setMode("general");
+
+  const pv = previewStats();
+  animateStat($("#hCompanies"), pv.co);
+  animateStat($("#hFields"),    pv.fields);
+  animateStat($("#hDelta"),     pv.delta, "%");
+
+  /* If the reader lands mid-page (deep link), fire the sim up to the visible step. */
+  const visible = $$(".step.in");
+  if (visible.length){
+    const stage = +visible[visible.length - 1].dataset.stage;
+    lastEnteredStage = stage;
+    activeStage = stage;
+    fireTo(stage);
+  }
+}
+boot();
+
 })();
 </script>
-
 </body>
 </html>
