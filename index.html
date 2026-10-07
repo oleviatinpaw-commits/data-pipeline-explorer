@@ -354,7 +354,11 @@ section.block:last-of-type{border-bottom:0}
 .scrolly .sticky .browser .page .ph{height:5px}
 .scrolly .sticky .browser .adslot{height:20px;font-size:.55rem;letter-spacing:.1em}
 .scrolly .sticky .browser .page .hint{font-size:.55rem;bottom:4px;right:8px}
-.scrolly .sticky .net{flex:1 1 auto;min-height:420px}
+.scrolly .sticky .browser{display:none}
+.scrolly .sticky .net{flex:1 1 auto;min-height:260px}
+.scrolly .sticky.expanded .net,
+.scrolly .sticky.detail-open .net{flex:0 0 260px}
+.scrolly .sticky .chipbar{flex:0 0 auto}
 .scrolly .steps{padding-bottom:28vh}
 .scrolly .sticky .togs{
   display:flex;flex-wrap:wrap;gap:4px 18px;flex:0 0 auto;
@@ -385,9 +389,49 @@ section.block:last-of-type{border-bottom:0}
   text-transform:uppercase;color:var(--muted);font-weight:600;
   pointer-events:none;
 }
-.scrolly .sticky .logcard{flex:0 0 auto;padding:8px 12px;gap:6px}
-.scrolly .sticky .log{max-height:110px}
-.scrolly .sticky .payload{max-height:120px;font-size:.68rem}
+.scrolly .sticky .logcard{flex:0 0 240px;min-height:0;padding:8px 12px;gap:6px}
+.scrolly .sticky.expanded .logcard,
+.scrolly .sticky.detail-open .logcard{flex:1 1 auto}
+.scrolly .sticky .log{flex:1 1 auto;min-height:0;max-height:none}
+.log[hidden],.detail[hidden]{display:none}
+.lc-actions{display:flex;align-items:baseline;gap:10px}
+.lc-btn{
+  font-family:var(--sans);font-size:.6rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:600;color:var(--ink);
+  background:#fff;border:1px solid var(--rule);border-radius:2px;
+  padding:3px 8px;cursor:pointer;
+}
+.lc-btn:hover{border-color:var(--ink)}
+.lc-btn[hidden]{display:none}
+.detail{flex:1 1 auto;min-height:0;overflow:auto;padding:2px 2px 8px;font-family:var(--sans)}
+.d-head{display:flex;align-items:center;gap:10px;margin-top:4px}
+.d-head b{font-size:.98rem;color:var(--ink)}
+.d-head .c{
+  font-size:.6rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 6px;border:1px solid currentColor;border-radius:2px;
+}
+.d-head .d-t{margin-left:auto;font-family:var(--mono);font-size:.66rem;color:var(--muted)}
+.d-desc{font-size:.78rem;color:var(--muted);margin:3px 0 10px}
+.d-note{
+  font-family:var(--serif);font-size:.95rem;line-height:1.55;color:var(--ink-2);
+  margin:0 0 12px;padding:10px 12px;background:var(--paper-2);border-left:2px solid var(--ink);
+}
+.d-ft{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;
+  font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--muted);
+  padding-bottom:6px;border-bottom:1px solid var(--rule);
+}
+.d-key{display:flex;gap:12px;letter-spacing:.04em;text-transform:none;font-weight:500}
+.d-key i,.d-fields i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c9c9c9;margin-right:5px;vertical-align:0}
+.d-key i.pii,.d-fields li.pii i{background:var(--crimson)}
+.d-key i.hot,.d-fields li.hot i{background:var(--navy)}
+.d-fields{list-style:none;margin:0;padding:0}
+.d-fields li{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:4px 8px;
+  padding:6px 0;border-bottom:1px solid var(--rule);font-size:.84rem;color:var(--ink-2);
+}
+.d-fields li.pii span{color:var(--ink);font-weight:600}
+.d-fields code{font-family:var(--mono);font-size:.66rem;color:var(--muted)}
 
 /* browser mock */
 .browser{
@@ -1139,9 +1183,11 @@ footer b{color:var(--ink);font-weight:600}
   .hud .k b{font-size:.85rem}
   .net .tline{right:8px;top:8px;font-size:.62rem;padding:4px 7px}
   .net .simhint{display:none}
-  .scrolly .sticky .logcard{max-height:220px}
-  .scrolly .sticky .log{max-height:96px}
-  .scrolly .sticky .payload{max-height:96px;font-size:.66rem}
+  .scrolly .sticky .logcard{flex:none;height:200px}
+  .scrolly .sticky.expanded .logcard,
+  .scrolly .sticky.detail-open .logcard{height:62vh}
+  .scrolly .sticky.expanded .net,
+  .scrolly .sticky.detail-open .net{aspect-ratio:auto;height:220px}
   .step{min-height:60vh;padding-block:28px}
   .step p{max-width:none}
   .step h3{max-width:none}
@@ -1320,12 +1366,18 @@ footer b{color:var(--ink);font-weight:600}
       </div>
 
       <div class="chipbar"><span class="lbl">Sent to third parties</span><div class="chips" id="chips"></div></div>
-      <div class="logcard">
-        <h4>Request log <em>click a row to inspect</em></h4>
+      <div class="logcard" id="logcard">
+        <h4>
+          <span id="logTitle">Request log</span>
+          <span class="lc-actions">
+            <em id="logHint">click a row to inspect</em>
+            <button type="button" class="lc-btn" id="logBack" hidden>&larr; All requests</button>
+            <button type="button" class="lc-btn" id="logExpand" aria-expanded="false">Expand</button>
+          </span>
+        </h4>
         <div class="log" id="log"></div>
+        <div class="detail" id="payload" hidden></div>
       </div>
-
-      <div class="payload collapsed" id="payload"><span class="cm">// Click a request to see what it carried.</span></div>
     </div>
   </div>
 
@@ -1656,6 +1708,7 @@ function sizeCanvas(){
   if (!r.width || !r.height) return;
   W = cv.width  = Math.round(r.width  * devicePixelRatio);
   H = cv.height = Math.round(r.height * devicePixelRatio);
+  nodes.forEach(place);
 }
 if (window.ResizeObserver) {
   new ResizeObserver(() => {
@@ -1674,33 +1727,37 @@ const COL = {
   fpr: "#7f1d1d"
 };
 
-function addNode(label, c, ring, parent){
-  const n = { label, c, ring, parent, x:0, y:0, born:performance.now(), fanCount:0 };
+/* Position one node from its slot. Re-run for every node whenever the canvas resizes. */
+function place(n){
   const cx = W/2, cy = H/2;
   const small = Math.min(W, H) < 520 * devicePixelRatio;   /* phone-sized canvas */
   const R1 = Math.min(W, H) * (small ? 0.26 : 0.30);
   const R2 = Math.min(W, H) * (small ? 0.42 : 0.46);
+  const ang = k => -Math.PI/2 + k * (2*Math.PI / 12);
 
-  if (ring === 0){
+  if (n.ring === 0){
     n.x = cx; n.y = cy;
-  } else if (ring === 1){
-    const k = nodes.filter(m => m.ring === 1).length;
-    const total = 12;
-    const a = -Math.PI/2 + k * (2*Math.PI / total);
-    n.x = cx + Math.cos(a) * R1;
-    n.y = cy + Math.sin(a) * R1;
+  } else if (n.ring === 1){
+    n.x = cx + Math.cos(ang(n.k)) * R1;
+    n.y = cy + Math.sin(ang(n.k)) * R1;
   } else {
     /* bidders: one dot each, fanned in an arc behind the exchange */
-    const k = nodes.filter(m => m.ring === 2 && m.parent === parent).length;
-    const total = parent.fanDots || 1;
-    const parentAngle = Math.atan2(parent.y - cy, parent.x - cx);
+    const total = n.parent.fanDots || 1;
+    const pa = ang(n.parent.k);
     const spread = Math.min(0.46, 0.026 * total);
-    const a = total === 1 ? parentAngle
-            : parentAngle - spread/2 + k * (spread / (total - 1));
+    const a = total === 1 ? pa : pa - spread/2 + n.k * (spread / (total - 1));
     n.x = cx + Math.cos(a) * R2;
     n.y = cy + Math.sin(a) * R2;
   }
+}
+
+function addNode(label, c, ring, parent){
+  const n = { label, c, ring, parent, x:0, y:0, born:performance.now(), fanCount:0 };
+  n.k = ring === 1 ? nodes.filter(m => m.ring === 1).length
+      : ring === 2 ? nodes.filter(m => m.ring === 2 && m.parent === parent).length
+      : 0;
   nodes.push(n);
+  place(n);
   return n;
 }
 
@@ -1880,20 +1937,51 @@ function fire(r, i){
   $("#log").scrollTop = $("#log").scrollHeight;
 }
 
+/* The card under the graph shows either the log or one request's detail */
+function setView(v){
+  const detail = v === "detail";
+  $("#log").hidden     = detail;
+  $("#payload").hidden = !detail;
+  $("#logBack").hidden = !detail;
+  $("#logHint").hidden = detail;
+  $("#logExpand").hidden = detail;
+  $("#stickyCol").classList.toggle("detail-open", detail);
+  $("#logTitle").textContent = detail ? "What this request sent" : "Request log";
+}
+
+function closeDetail(){
+  selReq = null;
+  $$(".req").forEach(b => b.setAttribute("aria-pressed", "false"));
+  setView("log");
+  if (!playing) drawNet(performance.now());
+}
+
 function showPayload(i){
+  const r = plan[i];
+  if (!r) return;
   selReq = i;
   if (!playing) drawNet(performance.now());
   $$(".req").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
-  const r = plan[i];
-  if (!r) return;
-  $("#payload").classList.remove("collapsed");
-  const lines = r.f.map(f => {
-    const d = FIELDS[f];
-    return `<span class="k">${d[0].padEnd(22)}</span> <span class="v ${d[2]}">${d[1]}</span>`;
-  }).join("\n");
+
+  const rank = { pii:0, hot:1, "":2 };
+  const fields = r.f.map(f => FIELDS[f]).filter(Boolean)
+    .sort((a, b) => rank[a[2]] - rank[b[2]]);
+  const tag = {fp:"1st",tp:"3rd",bid:"RTB",fpr:"ID"}[r.c];
+
   $("#payload").innerHTML =
-    `<span class="cm">// ${r.n}${r.fan ? ` → ${r.fan} bidders received this` : ""}</span>\n` +
-    lines + `\n\n<span class="cm">// ${r.note}</span>`;
+    `<div class="d-head"><span class="c ${r.c}">${tag}</span><b>${r.n}</b>` +
+      `<span class="d-t">${Math.round(r.t)} ms</span></div>` +
+    `<div class="d-desc">${r.d}${r.fan ? ` · sent to ${r.fan} bidders` : ""}</div>` +
+    `<p class="d-note">${r.note}</p>` +
+    `<div class="d-ft"><span>What it sent · ${fields.length} fields</span>` +
+      `<span class="d-key"><span><i class="pii"></i>identifies you</span>` +
+      `<span><i class="hot"></i>tracks you</span></span></div>` +
+    `<ul class="d-fields">` +
+      fields.map(([key, label, cls]) =>
+        `<li class="${cls}"><i></i><span>${label}</span><code>${key}</code></li>`).join("") +
+    `</ul>`;
+  setView("detail");
+  $("#payload").scrollTop = 0;
 }
 
 /* Which fields the toggles control — shown as chips on the canvas */
@@ -1936,8 +2024,8 @@ function resetSim(){
     a.className = "adslot";
     a.textContent = "Ad slot";
   });
-  $("#payload").classList.add("collapsed");
-  $("#payload").innerHTML = '<span class="cm">// Click a request to see what it carried.</span>';
+  $("#payload").innerHTML = "";
+  setView("log");
   $("#url").textContent = MODES[mode].url;
   $("#pageHint").textContent = "scroll to load →";
   $("#simHint").textContent = "scroll to load";
@@ -2002,6 +2090,24 @@ $$(".step").forEach(s => stepObs.observe(s));
 
 /* --- controls --- */
 $("#replay").addEventListener("click", replay);
+
+/* log rows → detail */
+$("#log").addEventListener("click", e => {
+  const row = e.target.closest(".req");
+  if (row) showPayload(+row.dataset.i);
+});
+$("#logBack").addEventListener("click", closeDetail);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("#payload").hidden) closeDetail();
+});
+
+/* Expand: give the log/detail card more room, shrink the graph */
+$("#logExpand").addEventListener("click", () => {
+  const on = !$("#stickyCol").classList.contains("expanded");
+  $("#stickyCol").classList.toggle("expanded", on);
+  $("#logExpand").setAttribute("aria-expanded", String(on));
+  $("#logExpand").textContent = on ? "Collapse" : "Expand";
+});
 
 /* FIX: toggle change also refreshes the log with a visual flash */
 ["optLogin","optLoc","optStrict","optBlocker"].forEach(id => {
