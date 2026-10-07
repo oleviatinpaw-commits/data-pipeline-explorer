@@ -1914,6 +1914,7 @@ function resetSim(){
 
 function fireTo(stage){
   if (stage < 0) return;
+  if (playing) return;           // a replay is animating; it already owns the plan
   plan = reqPlan();
   let any = false;
   while (fired < plan.length && plan[fired].s <= stage){
@@ -1927,20 +1928,24 @@ function fireTo(stage){
   }
 }
 
-/* --- FIX: replay uses the visible step, not stale lastEnteredStage --- */
+/* Replay: rebuild the plan from the current toggles and re-run it as a
+   fresh animated load, up to the step the reader is currently at. */
 function replay(){
-  /* Prefer the highest visible step. Fall back to last entered. Fall back to "run everything". */
   let target = lastEnteredStage;
   const visible = $$(".step.in");
-  if (visible.length) {
-    target = Math.max(...visible.map(s => +s.dataset.stage));
-  }
+  if (visible.length) target = Math.max(...visible.map(s => +s.dataset.stage));
   if (target < 0) target = 6;
 
   resetSim();
-  activeStage = -1;
+  activeStage = target;          // scrolling won't re-fire what we're about to animate
   lastEnteredStage = target;
-  fireTo(target);
+
+  plan = reqPlan().filter(r => r.s <= target);
+  fired = 0;
+  t0 = performance.now();
+  playing = true;
+  $("#pageHint").textContent = "reloading…";
+  raf = requestAnimationFrame(tick);
 }
 /* --- intersection observer --- */
 const stepObs = new IntersectionObserver(entries => {
