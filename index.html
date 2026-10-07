@@ -1199,11 +1199,12 @@ footer b{color:var(--ink);font-weight:600}
       </div>
       <button class="btn" id="replay" type="button">Replay</button>
     </div>
-    <div class="togs">
-      <label class="tog"><input type="checkbox" id="optLogin" checked> Signed in to the site (email known)</label>
-      <label class="tog"><input type="checkbox" id="optLoc" checked> Location permission granted</label>
-      <label class="tog"><input type="checkbox" id="optConsent"> Trackers wait for cookie consent</label>
-    </div>
+   <div class="togs">
+  <label class="tog"><input type="checkbox" id="optLogin" checked> Signed in to the site (email known)</label>
+  <label class="tog"><input type="checkbox" id="optLoc" checked> Location permission granted</label>
+  <label class="tog"><input type="checkbox" id="optStrict"> Strict consent mode (EU-style) — trackers wait for permission</label>
+  <label class="tog"><input type="checkbox" id="optBlocker"> Ad blocker installed</label>
+</div>
     <p class="note">Timing and counts are illustrative, not a measurement of any one site. Toggle a setting to see the requests change.</p>
   </div>
 
@@ -1529,15 +1530,32 @@ const FIELDS = {
 function reqPlan(){
   const login   = $("#optLogin").checked;
   const loc     = $("#optLoc").checked;
-  const consent = $("#optConsent").checked;
+  const strict  = $("#optStrict").checked;
+  const blocker = $("#optBlocker").checked;
   const m = MODES[mode];
   const R = [];
 
+  /* 1. The page itself — always fires */
+  const pageNote = blocker
+    ? "First party. Needed to render the page. Everything else was blocked before it loaded."
+    : "First party. Needed to render the page.";
   R.push({ s:0, t:0, n:m.url.split("/")[0], d:"The page you asked for", c:"fp",
-    f:["url","ip","ua","scr","cookie"],
-    note:"First party. Needed to render the page." });
+    f:["url","ip","ua","scr","cookie"], note:pageNote });
 
-  const tag = consent ? 650 : 140;
+  /* Ad blocker: nothing else gets through */
+  if (blocker) return R;
+
+  /* Strict consent: loader fires but refuses to inject anything */
+  if (strict){
+    R.push({ s:1, t:180, n:"Tag manager", d:"Waiting for consent — never granted", c:"tp",
+      f:["url","ref"],
+      note:"The tag manager loads, but with consent mode on and no grant, the other scripts never activate. This is the intended EU-style default." });
+    return R;
+  }
+
+  /* Full US-style: everything fires */
+  const tag = 140;
+  const moreBids = login ? 4 : 0;   /* identifiable users attract more bidders */
 
   R.push({ s:1, t:tag, n:"Tag manager", d:"Loads other companies' code", c:"tp",
     f:["url","ref","cid"],
@@ -1559,11 +1577,14 @@ function reqPlan(){
     f:["url","slots","consent","cid"],
     note:"Builds the bid request: the page, the ad slots, the consent string, the client ID, and any audience segments attached to it." });
 
-  ["Exchange A","Exchange B","Exchange C"].forEach((e,i) => {
-    R.push({ s:4, t:tag+240+i*70, n:e, d:"Bid request → bidders", c:"bid", fan:11+i*3,
+  [11, 14, 17].forEach((baseFan, i) => {
+    const e = ["Exchange A","Exchange B","Exchange C"][i];
+    const fan = baseFan + moreBids;
+    R.push({ s:4, t:tag+240+i*70, n:e, d:"Bid request → bidders", c:"bid", fan:fan,
       f:["url","ref","ip","ua","ifa","uid","seg"].concat(loc ? ["geo"] : []),
       note:"OpenRTB bid request, broadcast to every bidder on the exchange. One wins the auction. The rest keep the data. " +
-           (loc ? "Includes precise lat/lon because location was permitted." : "No GPS, but the IP resolves to a city.") });
+           (loc ? "Includes precise lat/lon because location was permitted." : "No GPS, but the IP resolves to a city.") +
+           (login ? " Because you are signed in, the request is enriched and more bidders respond." : "") });
   });
 
   R.push({ s:5, t:tag+560, n:"Winning ad + verification",
@@ -1856,18 +1877,18 @@ function fireTo(stage){
 
 /* --- FIX: replay uses the visible step, not stale lastEnteredStage --- */
 function replay(){
-  const visibleSteps = $$(".step.in");
-  const target = visibleSteps.length
-    ? +visibleSteps[visibleSteps.length - 1].dataset.stage
-    : lastEnteredStage;
+  /* Prefer the highest visible step. Fall back to last entered. Fall back to "run everything". */
+  let target = lastEnteredStage;
+  const visible = $$(".step.in");
+  if (visible.length) {
+    target = Math.max(...visible.map(s => +s.dataset.stage));
+  }
+  if (target < 0) target = 6;
 
   resetSim();
   activeStage = -1;
-
-  if (target >= 0){
-    lastEnteredStage = target;
-    fireTo(target);
-  }
+  lastEnteredStage = target;
+  fireTo(target);
 }
 
 /* --- intersection observer --- */
@@ -1890,18 +1911,15 @@ $("#replay").addEventListener("click", replay);
 $("#pageArea").addEventListener("click", replay);
 
 /* FIX: toggle change also refreshes the log with a visual flash */
-["optLogin","optLoc","optConsent"].forEach(id => {
-  $("#"+id).addEventListener("change", () => {
+["optLogin","optLoc","optStrict","optBlocker"].forEach(id => {
+  const el = $("#"+id);
+  if (!el) return;
+  el.addEventListener("change", () => {
     const log = $("#log");
     log.classList.add("refresh");
     replay();
     setTimeout(() => log.classList.remove("refresh"), 200);
   });
-});
-
-$("#log").addEventListener("click", e => {
-  const b = e.target.closest(".req");
-  if (b) showPayload(+b.dataset.i);
 });
 
 /* --- canvas hit-testing --- */
