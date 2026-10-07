@@ -1605,58 +1605,6 @@ function reqPlan(){
   return R;
 }
 
-  /* Full US-style: everything fires */
-  const tag = 140;
-  const moreBids = login ? 4 : 0;   /* identifiable users attract more bidders */
-
-  R.push({ s:1, t:tag, n:"Tag manager", d:"Loads other companies' code", c:"tp",
-    f:["url","ref","cid"],
-    note:"A loader whose only job is to inject other trackers." });
-
-  R.push({ s:2, t:tag+60, n:"Analytics", d:"Page view, session, client ID", c:"tp",
-    f:["url","ref","scr","cid","sess"],
-    note:"Assigns a persistent client ID that follows you across visits." });
-
-  R.push({ s:2, t:tag+120, n:"Social pixel",
-    d:"Event + cross-site cookie" + (login ? " + hashed email" : ""), c:"tp",
-    f:["url","ev","fbp"].concat(login ? ["email"] : []),
-    note: login
-      ? "Because you are signed in, the pixel can send a hash of your email address. That links this visit to your social profile and to every other site where you have used that email."
-      : "Without a sign-in the pixel still sets a cross-site cookie that recognizes you on every site carrying the same pixel." });
-
-  R.push({ s:3, t:tag+190, n:"Header-bidding wrapper",
-    d:"Packages the page for auction", c:"tp",
-    f:["url","slots","consent","cid"],
-    note:"Builds the bid request: the page, the ad slots, the consent string, the client ID, and any audience segments attached to it." });
-
-  [11, 14, 17].forEach((baseFan, i) => {
-    const e = ["Exchange A","Exchange B","Exchange C"][i];
-    const fan = baseFan + moreBids;
-    R.push({ s:4, t:tag+240+i*70, n:e, d:"Bid request → bidders", c:"bid", fan:fan,
-      f:["url","ref","ip","ua","ifa","uid","seg"].concat(loc ? ["geo"] : []),
-      note:"OpenRTB bid request, broadcast to every bidder on the exchange. One wins the auction. The rest keep the data. " +
-           (loc ? "Includes precise lat/lon because location was permitted." : "No GPS, but the IP resolves to a city.") +
-           (login ? " Because you are signed in, the request is enriched and more bidders respond." : "") });
-  });
-
-  R.push({ s:5, t:tag+560, n:"Winning ad + verification",
-    d:"Creative, viewability, 3 more trackers", c:"tp",
-    f:["url","ip","ua","cid"],
-    note:"The ad itself loads measurement scripts. Each one is a separate company." });
-
-  R.push({ s:6, t:tag+700, n:"Fingerprint script",
-    d:"Identifies you without cookies", c:"fpr",
-    f:["canvas","fonts","tz","audio","ua","scr"],
-    note:"Canvas, font and audio fingerprinting identify the browser itself, even after cookies are cleared. The FTC has named this technique in its tracking enforcement." });
-
-  R.push({ s:6, t:tag+820, n:"Data broker beacon",
-    d:"Appends the visit to a stored file", c:"fpr",
-    f:["cid","ifa","seg"].concat(login ? ["email"] : []),
-    note:"A broker that bought a seat as a bidder, or runs its own pixel, writes the visit into a profile it will license later." });
-
-  return R;
-}
-
 /* --- state --- */
 let selReq = null, plan = [], fired = 0, companies = 0, bidders = 0;
 let fieldSet = new Set(), raf = null, t0 = 0, playing = false;
