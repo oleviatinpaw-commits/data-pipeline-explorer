@@ -2,8 +2,6 @@
 
 An interactive explainer showing how personal data is collected, joined into a profile, and turned into a price, across housing, grocery retail, and higher education.
 
-**Authors:** Olevia Tinpaw & Zainab Raza · University of Maryland · October 2026
-
 ## What's on the page
 
 1. **One page load.** Simulates a typical ad-supported page loading: first-party request, tag manager, analytics, social pixel, header bidding, three ad exchanges fanning out to bidders, fingerprinting, and a broker beacon. Click any request or network node to inspect the fields it carried (modeled on OpenRTB bid requests).
