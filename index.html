@@ -18,7 +18,6 @@
   --muted-2:#8a8a8a;
   --rule:#d8d5cc;
   --rule-2:#a8a49a;
-  --rule-ink:#141414;
 
   --navy:#1e3a8a;
   --navy-soft:rgba(30,58,138,.10);
@@ -65,9 +64,6 @@ button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
 :focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:2px}
 
-/* ============================================================
-   KICKERS, META
-   ============================================================ */
 .kicker{
   font-family:var(--sans);
   font-size:.7rem;
@@ -76,7 +72,6 @@ button{cursor:pointer;background:none;border:0;padding:0}
   text-transform:uppercase;
   color:var(--muted);
 }
-.kicker.ink{color:var(--ink)}
 .deck{
   font-family:var(--serif);
   font-size:clamp(1.05rem,1.6vw,1.28rem);
@@ -85,21 +80,15 @@ button{cursor:pointer;background:none;border:0;padding:0}
   font-weight:400;
   max-width:64ch;
 }
-.rule{height:1px;background:var(--rule);border:0;margin:0}
-.mono{font-family:var(--mono);font-size:.85em}
 .small{font-size:.85rem}
 
-/* ============================================================
-   PROGRESS
-   ============================================================ */
+/* progress */
 .progress{
   position:fixed;top:0;left:0;height:2px;width:0;background:var(--ink);
   z-index:60;pointer-events:none;transition:width .05s linear;
 }
 
-/* ============================================================
-   MASTHEAD / NAV
-   ============================================================ */
+/* masthead */
 .masthead{
   border-bottom:1px solid var(--ink);
   padding:14px 0 12px;
@@ -114,14 +103,12 @@ button{cursor:pointer;background:none;border:0;padding:0}
   font-weight:900;
   font-size:1.15rem;
   letter-spacing:-.01em;
-  color:var(--ink);
 }
 .masthead .nav{display:flex;gap:22px;flex-wrap:wrap}
 .masthead .nav a{
   font-family:var(--sans);
   font-size:.78rem;
   font-weight:500;
-  letter-spacing:.02em;
   color:var(--ink-2);
   border:0;
   padding-bottom:2px;
@@ -163,7 +150,6 @@ button{cursor:pointer;background:none;border:0;padding:0}
   font-family:var(--sans);
   font-size:.76rem;
   font-weight:500;
-  letter-spacing:.02em;
   padding:7px 14px;
   color:var(--ink-2);
   border-right:1px solid var(--rule);
@@ -173,9 +159,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .modes button:hover{background:var(--paper-2)}
 .modes button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
 
-/* ============================================================
-   HERO
-   ============================================================ */
+/* hero */
 .hero{
   padding:44px 0 28px;
   border-bottom:1px solid var(--rule);
@@ -191,7 +175,6 @@ button{cursor:pointer;background:none;border:0;padding:0}
   font-family:var(--sans);
   font-size:.78rem;
   color:var(--muted);
-  letter-spacing:.02em;
   padding-top:18px;
   border-top:1px solid var(--rule);
   margin-top:6px;
@@ -201,7 +184,6 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .figures{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:0;
   border-top:1px solid var(--ink);
   border-bottom:1px solid var(--ink);
   margin-top:26px;
@@ -210,8 +192,6 @@ button{cursor:pointer;background:none;border:0;padding:0}
   padding:18px 20px;
   border-right:1px solid var(--rule);
   text-align:left;
-  background:none;
-  border-radius:0;
   transition:background .15s;
 }
 .figures .fig:last-child{border-right:0}
@@ -224,7 +204,6 @@ button{cursor:pointer;background:none;border:0;padding:0}
   display:block;
   margin-bottom:6px;
   font-variant-numeric:tabular-nums;
-  color:var(--ink);
 }
 .figures .fig .l{
   font-family:var(--sans);
@@ -242,9 +221,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
   .figures .fig:last-child{border-bottom:0}
 }
 
-/* ============================================================
-   SECTIONS
-   ============================================================ */
+/* sections */
 section.block{
   padding:52px 0;
   border-bottom:1px solid var(--rule);
@@ -277,9 +254,7 @@ section.block:last-of-type{border-bottom:0}
   .section-head .num{padding-top:0;font-size:1.4rem}
 }
 
-/* ============================================================
-   SCENARIO STRIP
-   ============================================================ */
+/* scenario strip */
 .scenario{
   border-top:1px solid var(--rule);
   border-bottom:1px solid var(--rule);
@@ -290,13 +265,17 @@ section.block:last-of-type{border-bottom:0}
   align-items:start;
   margin-bottom:8px;
 }
-.scenario .row{display:flex;justify-content:space-between;align-items:center;grid-column:1/-1;flex-wrap:wrap;gap:12px}
+.scenario .row{
+  display:flex;justify-content:space-between;align-items:center;
+  grid-column:1/-1;flex-wrap:wrap;gap:12px;
+}
 .scenario .togs{display:grid;gap:6px;grid-column:1/-1}
-.scenario .note{grid-column:1/-1;font-size:.82rem;color:var(--muted);font-family:var(--sans);margin:0;line-height:1.5}
+.scenario .note{
+  grid-column:1/-1;font-size:.82rem;color:var(--muted);
+  font-family:var(--sans);margin:0;line-height:1.5;
+}
 
-/* ============================================================
-   SCROLLYTELLING
-   ============================================================ */
+/* scrollytelling */
 .scrolly{
   display:grid;
   grid-template-columns:minmax(0,380px) minmax(0,1fr);
@@ -345,7 +324,6 @@ section.block:last-of-type{border-bottom:0}
   font-weight:500;
 }
 
-/* --- sticky visual column --- */
 .scrolly .sticky{
   position:sticky;
   top:72px;
@@ -367,8 +345,6 @@ section.block:last-of-type{border-bottom:0}
   border-bottom:1px solid var(--ink);
   flex:0 0 auto;
 }
-
-/* Browser mock shrinks */
 .scrolly .sticky .browser{
   flex:0 0 auto;
   max-height:88px;
@@ -378,25 +354,12 @@ section.block:last-of-type{border-bottom:0}
 .scrolly .sticky .browser .page .ph{height:5px}
 .scrolly .sticky .browser .adslot{height:20px;font-size:.55rem;letter-spacing:.1em}
 .scrolly .sticky .browser .page .hint{font-size:.55rem;bottom:4px;right:8px}
-
-/* Canvas gets the room */
-.scrolly .sticky .net{
-  flex:1 1 auto;
-  min-height:420px;
-}
-
-/* Log stays compact */
-.scrolly .sticky .logcard{
-  flex:0 0 auto;
-  padding:8px 12px;
-  gap:6px;
-}
+.scrolly .sticky .net{flex:1 1 auto;min-height:420px}
+.scrolly .sticky .logcard{flex:0 0 auto;padding:8px 12px;gap:6px}
 .scrolly .sticky .log{max-height:110px}
 .scrolly .sticky .payload{max-height:120px;font-size:.68rem}
 
-/* ============================================================
-   BROWSER MOCK (base)
-   ============================================================ */
+/* browser mock */
 .browser{
   border:1px solid var(--rule);
   border-radius:2px;
@@ -461,9 +424,7 @@ section.block:last-of-type{border-bottom:0}
   font-weight:500;
 }
 
-/* ============================================================
-   NETWORK CANVAS
-   ============================================================ */
+/* network canvas */
 .net{
   position:relative;
   background:#fff;
@@ -525,9 +486,7 @@ section.block:last-of-type{border-bottom:0}
 .net .tip b{color:#fff;font-weight:600}
 .net .tip[hidden]{display:none}
 
-/* ============================================================
-   LOG
-   ============================================================ */
+/* log */
 .logcard{
   display:flex;
   flex-direction:column;
@@ -562,7 +521,9 @@ section.block:last-of-type{border-bottom:0}
   display:grid;
   gap:0;
   overflow:auto;
+  transition:opacity .35s ease;
 }
+.log.refresh{opacity:.35}
 .req{
   display:grid;
   grid-template-columns:56px 1fr auto;
@@ -577,9 +538,7 @@ section.block:last-of-type{border-bottom:0}
   min-width:0;
   font-family:var(--sans);
   transition:background .12s;
-  animation:in .25s ease-out;
 }
-@keyframes in{from{opacity:0}to{opacity:1}}
 .req:first-child{border-top:0}
 .req:hover{background:var(--paper-2)}
 .req .t{
@@ -618,13 +577,11 @@ section.block:last-of-type{border-bottom:0}
 }
 .c.fp{color:var(--slate)}
 .c.tp{color:var(--navy)}
-.c.bid{color:var(--rust)}
+.c.bid{color:var(--navy);opacity:.7}
 .c.fpr{color:var(--crimson)}
 .req[aria-pressed="true"]{background:var(--paper-2);box-shadow:inset 2px 0 0 var(--ink)}
 
-/* ============================================================
-   PAYLOAD
-   ============================================================ */
+/* payload */
 .payload{
   font-family:var(--mono);
   font-size:.72rem;
@@ -645,9 +602,7 @@ section.block:last-of-type{border-bottom:0}
 .payload .pii{color:var(--rust);font-weight:600}
 .payload .cm{color:var(--muted);font-style:italic}
 
-/* ============================================================
-   LEGEND
-   ============================================================ */
+/* legend */
 .legend{
   display:flex;
   gap:20px;
@@ -655,7 +610,6 @@ section.block:last-of-type{border-bottom:0}
   font-family:var(--sans);
   font-size:.72rem;
   color:var(--muted);
-  letter-spacing:.02em;
   padding-top:12px;
   border-top:1px solid var(--rule);
   margin-top:4px;
@@ -669,9 +623,7 @@ section.block:last-of-type{border-bottom:0}
   background:var(--x);
 }
 
-/* ============================================================
-   TOGGLES
-   ============================================================ */
+/* toggles */
 .tog{
   display:flex;
   align-items:flex-start;
@@ -691,9 +643,7 @@ section.block:last-of-type{border-bottom:0}
   flex-shrink:0;
 }
 
-/* ============================================================
-   PROFILE / SOURCES
-   ============================================================ */
+/* profile builder */
 .grid-02{
   display:grid;
   grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) minmax(0,1fr);
@@ -717,7 +667,10 @@ section.block:last-of-type{border-bottom:0}
   align-items:baseline;
   gap:8px;
 }
-.col-label em{font-style:normal;font-family:var(--sans);font-size:.68rem;letter-spacing:.04em;text-transform:none;color:var(--muted-2);font-weight:400}
+.col-label em{
+  font-style:normal;font-family:var(--sans);font-size:.68rem;
+  letter-spacing:.04em;text-transform:none;color:var(--muted-2);font-weight:400;
+}
 
 .sources{display:grid}
 .src{
@@ -744,19 +697,9 @@ section.block:last-of-type{border-bottom:0}
 }
 .src[aria-pressed="true"] .ic{color:var(--navy)}
 .src .body{display:grid;gap:2px;min-width:0}
-.src b{
-  font-size:.92rem;
-  font-weight:600;
-  color:var(--ink-2);
-  font-family:var(--sans);
-}
+.src b{font-size:.92rem;font-weight:600;color:var(--ink-2);font-family:var(--sans)}
 .src[aria-pressed="true"] b{color:var(--ink)}
-.src small{
-  font-size:.72rem;
-  color:var(--muted);
-  font-family:var(--sans);
-  line-height:1.45;
-}
+.src small{font-size:.72rem;color:var(--muted);font-family:var(--sans);line-height:1.45}
 .src .dot{
   display:inline-block;
   width:6px;height:6px;
@@ -818,7 +761,6 @@ section.block:last-of-type{border-bottom:0}
   width:64px;height:4px;
   background:var(--rule);
   overflow:hidden;
-  position:relative;
 }
 .conf i{display:block;height:100%;background:var(--navy);transition:width .4s}
 .profile .tag-src{
@@ -829,9 +771,11 @@ section.block:last-of-type{border-bottom:0}
   color:var(--navy);
   font-weight:600;
 }
-.profile .row.note{display:block;font-size:.78rem;color:var(--muted);line-height:1.5;font-family:var(--sans)}
+.profile .row.note{
+  display:block;font-size:.78rem;color:var(--muted);
+  line-height:1.5;font-family:var(--sans);
+}
 
-/* link note */
 .linknote{
   border-top:1px solid var(--rule);
   border-bottom:1px solid var(--rule);
@@ -852,9 +796,7 @@ section.block:last-of-type{border-bottom:0}
 .linknote.on{opacity:1;transform:none;pointer-events:auto}
 .linknote b{color:var(--ink);font-weight:600}
 
-/* ============================================================
-   PRICING
-   ============================================================ */
+/* pricing */
 .grid-03{
   display:grid;
   grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr) minmax(0,.9fr);
@@ -876,7 +818,6 @@ section.block:last-of-type{border-bottom:0}
   font-family:var(--sans);
   font-size:.72rem;
   font-weight:500;
-  letter-spacing:.02em;
   padding:6px 11px;
   color:var(--ink-2);
   border-right:1px solid var(--rule);
@@ -951,7 +892,6 @@ section.block:last-of-type{border-bottom:0}
 .out{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:0;
   border-top:1px solid var(--ink);
   border-bottom:1px solid var(--ink);
   margin-bottom:14px;
@@ -990,18 +930,12 @@ section.block:last-of-type{border-bottom:0}
 .delta.up{color:var(--rust)}
 .delta.down{color:var(--ok)}
 
-.callout.warn{
-  border-left-color:var(--rust);
-  background:var(--rust-soft);
-}
+.callout.warn{border-left-color:var(--rust);background:var(--rust-soft)}
 
-/* ============================================================
-   INDUSTRIES
-   ============================================================ */
+/* industries */
 .ind3{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:0;
   border-top:1px solid var(--ink);
   border-bottom:1px solid var(--ink);
 }
@@ -1065,7 +999,6 @@ section.block:last-of-type{border-bottom:0}
   color:var(--ink-2);
   border:1px solid var(--rule);
   border-radius:2px;
-  letter-spacing:.01em;
 }
 .ind .out-line{
   font-family:var(--serif);
@@ -1087,14 +1020,7 @@ section.block:last-of-type{border-bottom:0}
   color:var(--ink-2);
 }
 .ev .e:last-child{border-bottom:0}
-.ev .e a{
-  font-family:var(--sans);
-  font-size:.75rem;
-  color:var(--navy);
-  border:0;
-  align-self:start;
-  letter-spacing:.01em;
-}
+.ev .e a{font-family:var(--sans);font-size:.75rem;color:var(--navy);border:0}
 .ev .e a:hover{text-decoration:underline}
 .pill{
   display:inline-block;
@@ -1121,9 +1047,7 @@ section.block:last-of-type{border-bottom:0}
   border-top:1px solid var(--rule);
 }
 
-/* ============================================================
-   FOOTER
-   ============================================================ */
+/* footer */
 footer{
   padding:36px 0 20px;
   border-top:1px solid var(--ink);
@@ -1136,11 +1060,9 @@ footer{
   gap:14px;
   max-width:78ch;
 }
-footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
+footer b{color:var(--ink);font-weight:600}
 
-/* ============================================================
-   BUTTONS
-   ============================================================ */
+/* buttons */
 .btn{
   font-family:var(--sans);
   font-size:.75rem;
@@ -1155,18 +1077,12 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   transition:all .15s;
 }
 .btn:hover{border-color:var(--ink);color:var(--ink)}
-.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.btn.primary:hover{background:#000}
 
-/* ============================================================
-   REVEAL
-   ============================================================ */
+/* reveal */
 .reveal{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease}
 .reveal.in{opacity:1;transform:none}
 
-/* ============================================================
-   MOBILE
-   ============================================================ */
+/* mobile */
 @media (max-width:900px){
   body{font-size:16px}
   .wrap{padding:0 18px 60px}
@@ -1203,9 +1119,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   .navbar .links a{font-size:.72rem}
 }
 
-/* ============================================================
-   REDUCED MOTION
-   ============================================================ */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{
@@ -1221,10 +1134,8 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
 </head>
 <body>
 <div class="progress" id="progress" aria-hidden="true"></div>
-
 <div class="wrap">
 
-<!-- ==================== MASTHEAD ==================== -->
 <header class="masthead">
   <div class="title">Data Pipeline Explorer</div>
   <nav class="nav">
@@ -1235,7 +1146,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   </nav>
 </header>
 
-<!-- ==================== STICKY NAV ==================== -->
 <nav class="navbar">
   <div class="links">
     <a href="#s1" data-sec="s1">01 · Collection</a>
@@ -1246,7 +1156,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   <div class="modes" role="group" aria-label="Industry mode" id="seg"></div>
 </nav>
 
-<!-- ==================== HERO ==================== -->
 <header class="hero">
   <span class="kicker">An interactive explainer</span>
   <h1>How a page view becomes a price</h1>
@@ -1256,7 +1165,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
     <span>Updated <b>October 2026</b></span>
     <span>Reading time <b>12 minutes</b></span>
   </div>
-
   <div class="figures">
     <button class="fig" data-go="s1" type="button">
       <span class="v" id="hCompanies">0</span>
@@ -1273,7 +1181,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   </div>
 </header>
 
-<!-- ==================== SECTION 01 ==================== -->
 <section class="block" id="s1">
   <div class="section-head">
     <div class="num">01</div>
@@ -1297,7 +1204,7 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
       <label class="tog"><input type="checkbox" id="optLoc" checked> Location permission granted</label>
       <label class="tog"><input type="checkbox" id="optConsent"> Trackers wait for cookie consent</label>
     </div>
-    <p class="note">Timing and counts are illustrative, not a measurement of any one site.</p>
+    <p class="note">Timing and counts are illustrative, not a measurement of any one site. Toggle a setting to see the requests change.</p>
   </div>
 
   <div class="scrolly">
@@ -1309,7 +1216,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
         <p>This is the request you intended to make.</p>
         <div class="carried">1 request · 1 company</div>
       </article>
-
       <article class="step" data-stage="1">
         <div class="stepnum">Step 2 of 7</div>
         <h3>A single script tag loads a tag manager</h3>
@@ -1317,7 +1223,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
         <p>One line becomes a dozen requests.</p>
         <div class="carried">+1 request · +1 company</div>
       </article>
-
       <article class="step" data-stage="2">
         <div class="stepnum">Step 3 of 7</div>
         <h3>Analytics and a social pixel</h3>
@@ -1325,7 +1230,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
         <p>If you are signed in, that pixel can send a <b>hash of your email address</b> — a link to your real identity, and to every other site where you have used that address.</p>
         <div class="carried">+2 requests · +2 companies</div>
       </article>
-
       <article class="step" data-stage="3">
         <div class="stepnum">Step 4 of 7</div>
         <h3>A wrapper packages the page for auction</h3>
@@ -1333,7 +1237,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
         <p>This is what gets broadcast.</p>
         <div class="carried">+1 request</div>
       </article>
-
       <article class="step" data-stage="4">
         <div class="stepnum">Step 5 of 7</div>
         <h3>Three exchanges fan the request out to bidders</h3>
@@ -1341,14 +1244,12 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
         <p>One wins and shows an ad. <b>The rest keep the data.</b></p>
         <div class="carried">+3 requests · +35 bidders</div>
       </article>
-
       <article class="step" data-stage="5">
         <div class="stepnum">Step 6 of 7</div>
         <h3>The winning ad loads its own trackers</h3>
         <p>The creative arrives with measurement scripts attached: viewability, verification, attribution. Each one is a separate company.</p>
         <div class="carried">+1 request · +3 companies</div>
       </article>
-
       <article class="step" data-stage="6">
         <div class="stepnum">Step 7 of 7</div>
         <h3>And identifiers that survive a cookie wipe</h3>
@@ -1391,14 +1292,12 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   </div>
 
   <div class="legend">
-    <span style="--x:var(--slate)">You · first party</span>
-    <span style="--x:var(--navy)">Tracker</span>
-    <span style="--x:var(--rust)">Exchange → bidders</span>
-    <span style="--x:var(--crimson)">Fingerprint · broker</span>
+    <span style="--x:#141414">You · first party</span>
+    <span style="--x:#1e3a8a">Third party · trackers and bidders</span>
+    <span style="--x:#7f1d1d">Cookie-independent identifiers</span>
   </div>
 </section>
 
-<!-- ==================== SECTION 02 ==================== -->
 <section class="block reveal" id="s2">
   <div class="section-head">
     <div class="num">02</div>
@@ -1414,14 +1313,12 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
       <div class="col-label">Sources <em>click to toggle</em></div>
       <div class="sources" id="sources"></div>
     </div>
-
     <div>
       <div class="col-label">How the records join</div>
       <div class="graph">
         <svg id="gsvg" viewBox="0 0 520 420" role="img" aria-label="Diagram showing separate records joining into one profile"></svg>
       </div>
     </div>
-
     <div>
       <div class="col-label">The profile <em id="profCount"></em></div>
       <div class="profile" id="profile"></div>
@@ -1435,7 +1332,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   </div>
 </section>
 
-<!-- ==================== SECTION 03 ==================== -->
 <section class="block reveal" id="s3">
   <div class="section-head">
     <div class="num">03</div>
@@ -1512,7 +1408,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   </div>
 </section>
 
-<!-- ==================== SECTION 04 ==================== -->
 <section class="block reveal" id="s4">
   <div class="section-head">
     <div class="num">04</div>
@@ -1525,7 +1420,6 @@ footer b{color:var(--ink);font-weight:600;font-family:var(--sans)}
   <div class="ind3" id="ind3"></div>
 </section>
 
-<!-- ==================== FOOTER ==================== -->
 <footer>
   <p><b>What this page claims.</b> The page-load simulation models mechanisms documented by the FTC and in the OpenRTB specification; its counts are illustrative. The profile and pricing models are simplified but directionally faithful to how enrollment-management, retail and revenue-management vendors describe their own products.</p>
   <p><b>What it does not claim.</b> No source shows location or browsing data feeding college aid models; the education mode does not include it. Allegations in pending litigation are labeled as allegations. This site is not affiliated with the companies or agencies named.</p>
@@ -1606,7 +1500,7 @@ function priceModel(){
 }
 
 /* ============================================================
-   SECTION 01 — PAGE LOAD SIMULATION
+   SECTION 01 — SIMULATION
    ============================================================ */
 const FIELDS = {
   url:["site.page","the exact page","hot"],
@@ -1653,13 +1547,15 @@ function reqPlan(){
     f:["url","ref","scr","cid","sess"],
     note:"Assigns a persistent client ID that follows you across visits." });
 
-  R.push({ s:2, t:tag+120, n:"Social pixel", d:"Event + cross-site cookie" + (login ? " + hashed email" : ""), c:"tp",
+  R.push({ s:2, t:tag+120, n:"Social pixel",
+    d:"Event + cross-site cookie" + (login ? " + hashed email" : ""), c:"tp",
     f:["url","ev","fbp"].concat(login ? ["email"] : []),
     note: login
       ? "Because you are signed in, the pixel can send a hash of your email address. That links this visit to your social profile and to every other site where you have used that email."
       : "Without a sign-in the pixel still sets a cross-site cookie that recognizes you on every site carrying the same pixel." });
 
-  R.push({ s:3, t:tag+190, n:"Header-bidding wrapper", d:"Packages the page for auction", c:"tp",
+  R.push({ s:3, t:tag+190, n:"Header-bidding wrapper",
+    d:"Packages the page for auction", c:"tp",
     f:["url","slots","consent","cid"],
     note:"Builds the bid request: the page, the ad slots, the consent string, the client ID, and any audience segments attached to it." });
 
@@ -1670,22 +1566,25 @@ function reqPlan(){
            (loc ? "Includes precise lat/lon because location was permitted." : "No GPS, but the IP resolves to a city.") });
   });
 
-  R.push({ s:5, t:tag+560, n:"Winning ad + verification", d:"Creative, viewability, 3 more trackers", c:"tp",
+  R.push({ s:5, t:tag+560, n:"Winning ad + verification",
+    d:"Creative, viewability, 3 more trackers", c:"tp",
     f:["url","ip","ua","cid"],
     note:"The ad itself loads measurement scripts. Each one is a separate company." });
 
-  R.push({ s:6, t:tag+700, n:"Fingerprint script", d:"Identifies you without cookies", c:"fpr",
+  R.push({ s:6, t:tag+700, n:"Fingerprint script",
+    d:"Identifies you without cookies", c:"fpr",
     f:["canvas","fonts","tz","audio","ua","scr"],
     note:"Canvas, font and audio fingerprinting identify the browser itself, even after cookies are cleared. The FTC has named this technique in its tracking enforcement." });
 
-  R.push({ s:6, t:tag+820, n:"Data broker beacon", d:"Appends the visit to a stored file", c:"fpr",
+  R.push({ s:6, t:tag+820, n:"Data broker beacon",
+    d:"Appends the visit to a stored file", c:"fpr",
     f:["cid","ifa","seg"].concat(login ? ["email"] : []),
     note:"A broker that bought a seat as a bidder, or runs its own pixel, writes the visit into a profile it will license later." });
 
   return R;
 }
 
-/* --- canvas state --- */
+/* --- state --- */
 let selReq = null, plan = [], fired = 0, companies = 0, bidders = 0;
 let fieldSet = new Set(), raf = null, t0 = 0, playing = false;
 let nodes = [], packets = [], W = 0, H = 0;
@@ -1700,13 +1599,25 @@ function sizeCanvas(){
   W = cv.width  = Math.round(r.width  * devicePixelRatio);
   H = cv.height = Math.round(r.height * devicePixelRatio);
 }
-if (window.ResizeObserver) new ResizeObserver(() => { sizeCanvas(); if (!playing) drawNet(performance.now()); }).observe($("#net"));
+if (window.ResizeObserver) {
+  new ResizeObserver(() => {
+    sizeCanvas();
+    if (!playing) drawNet(performance.now());
+  }).observe($("#net"));
+}
 
-/* Node colors */
-const COL = { fp:"#1f2937", tp:"#1e3a8a", bid:"#b45309", fpr:"#7f1d1d" };
+/* WSJ-style: only two colors on the canvas.
+   Ink for you. Navy for everything third-party.
+   Dark red reserved for the two cookie-independent identifiers. */
+const COL = {
+  fp:  "#141414",
+  tp:  "#1e3a8a",
+  bid: "#1e3a8a",
+  fpr: "#7f1d1d"
+};
 
 function addNode(label, c, ring, parent){
-  const n = { label, c, ring, parent, x:0, y:0, born:performance.now() };
+  const n = { label, c, ring, parent, x:0, y:0, born:performance.now(), fanCount:0 };
   const cx = W/2, cy = H/2;
   const R1 = Math.min(W, H) * 0.30;
   const R2 = Math.min(W, H) * 0.46;
@@ -1714,14 +1625,12 @@ function addNode(label, c, ring, parent){
   if (ring === 0){
     n.x = cx; n.y = cy;
   } else if (ring === 1){
-    /* Spread ring-1 nodes evenly around the full circle (total planned = 12) */
     const k = nodes.filter(m => m.ring === 1).length;
     const total = 12;
     const a = -Math.PI/2 + k * (2*Math.PI / total);
     n.x = cx + Math.cos(a) * R1;
     n.y = cy + Math.sin(a) * R1;
   } else {
-    /* Ring-2 bidders cluster tightly around their parent exchange */
     const siblings = nodes.filter(m => m.ring === 2 && m.parent === parent);
     const k = siblings.length;
     const parentAngle = Math.atan2(parent.y - cy, parent.x - cx);
@@ -1739,10 +1648,12 @@ function drawNet(now){
   ctx.clearRect(0,0,W,H);
   const dp = devicePixelRatio;
 
-  /* edges */
+  /* edges — all navy, bidders lighter */
   nodes.forEach(n => {
     if (!n.parent) return;
-    ctx.strokeStyle = n.c === "bid" ? "rgba(180,83,9,.28)" : "rgba(30,58,138,.24)";
+    ctx.strokeStyle = n.ring === 2
+      ? "rgba(30,58,138,.18)"
+      : "rgba(30,58,138,.28)";
     ctx.lineWidth = 1*dp;
     ctx.beginPath();
     ctx.moveTo(n.parent.x, n.parent.y);
@@ -1750,23 +1661,24 @@ function drawNet(now){
     ctx.stroke();
   });
 
-  /* packets */
+  /* packets — smaller, no glow */
   if (!RM){
     packets = packets.filter(p => now - p.t < p.d);
     packets.forEach(p => {
       const k = (now - p.t)/p.d;
       const x = p.a.x + (p.b.x - p.a.x)*k;
       const y = p.a.y + (p.b.y - p.a.y)*k;
-      ctx.fillStyle = COL[p.c];
+      ctx.fillStyle = p.c === "fpr" ? "#7f1d1d" : "#1e3a8a";
+      ctx.globalAlpha = 0.7;
       ctx.beginPath();
-      ctx.arc(x, y, 2.5*dp, 0, 7);
+      ctx.arc(x, y, 2*dp, 0, 7);
       ctx.fill();
+      ctx.globalAlpha = 1;
     });
   }
 
   /* nodes */
   nodes.forEach(n => {
-    /* selection ring */
     if (selReq !== null && n.req === selReq){
       ctx.strokeStyle = "#141414";
       ctx.lineWidth = 2*dp;
@@ -1779,12 +1691,15 @@ function drawNet(now){
     const baseR = n.ring === 0 ? 22 : n.ring === 1 ? 10 : 4;
     const rr = baseR * dp * (0.55 + 0.45 * age);
 
-    ctx.fillStyle = n.ring === 0 ? "#141414" : COL[n.c];
+    ctx.fillStyle = COL[n.c];
+    /* bidders lighter via reduced alpha, not hue */
+    if (n.ring === 2) ctx.globalAlpha = 0.55;
     ctx.beginPath();
     ctx.arc(n.x, n.y, rr, 0, 7);
     ctx.fill();
+    ctx.globalAlpha = 1;
 
-    /* Center "YOU" label */
+    /* YOU label */
     if (n.ring === 0){
       ctx.fillStyle = "#fbfaf6";
       ctx.font = `700 ${10*dp}px Inter, sans-serif`;
@@ -1793,7 +1708,7 @@ function drawNet(now){
       return;
     }
 
-    /* Ring-1 labels placed outward from center */
+    /* ring-1 labels */
     if (n.ring === 1){
       const ang = Math.atan2(n.y - H/2, n.x - W/2);
       const lx = n.x + Math.cos(ang) * 26*dp;
@@ -1805,10 +1720,9 @@ function drawNet(now){
       ctx.font = `600 ${12*dp}px Inter, sans-serif`;
       ctx.fillText(n.label, lx, ly + 4*dp);
 
-      /* Bidder count on exchange nodes */
       if (n.fanCount){
-        ctx.fillStyle = "#b45309";
-        ctx.font = `600 ${10*dp}px Inter, sans-serif`;
+        ctx.fillStyle = "#6b6b6b";
+        ctx.font = `500 ${10*dp}px Inter, sans-serif`;
         ctx.fillText("→ " + n.fanCount + " bidders", lx, ly + 18*dp);
       }
     }
@@ -1842,7 +1756,6 @@ function fire(r, i){
     companies += r.fan;
     bidders   += r.fan;
     n.fanCount = r.fan;
-    /* 3 representative bidder dots per exchange */
     for (let k = 0; k < 3; k++){
       const b = addNode("", r.c, 2, n);
       b.req = i;
@@ -1893,20 +1806,35 @@ function showPayload(i){
     lines + `\n\n<span class="cm">// ${r.note}</span>`;
 }
 
+/* --- FIX: resetSim no longer draws an empty canvas mid-reset --- */
 function resetSim(){
   cancelAnimationFrame(raf);
-  playing = false; fired = 0; companies = 0; bidders = 0;
-  fieldSet = new Set(); nodes = []; packets = [];
-  activeStage = -1; selReq = null;
+  playing = false;
+  fired = 0;
+  companies = 0;
+  bidders = 0;
+  fieldSet = new Set();
+  nodes = [];
+  packets = [];
+  selReq = null;
+
   $("#log").innerHTML = "";
-  $("#kReq").textContent = 0; $("#kCo").textContent = 0; $("#kBid").textContent = 0;
+  $("#kReq").textContent = 0;
+  $("#kCo").textContent = 0;
+  $("#kBid").textContent = 0;
   $("#tms").textContent = 0;
-  ["ad1","ad2"].forEach(id => { const a = $("#"+id); a.className = "adslot"; a.textContent = "Ad slot"; });
+  ["ad1","ad2"].forEach(id => {
+    const a = $("#"+id);
+    a.className = "adslot";
+    a.textContent = "Ad slot";
+  });
   $("#payload").classList.add("collapsed");
   $("#payload").innerHTML = '<span class="cm">// Click a request to see what it carried.</span>';
   $("#url").textContent = MODES[mode].url;
   $("#pageHint").textContent = "scroll to load →";
+
   sizeCanvas();
+  ctx.clearRect(0, 0, W, H);
   addNode("", "fp", 0, null);
   drawNet(performance.now());
 }
@@ -1926,13 +1854,23 @@ function fireTo(stage){
   }
 }
 
+/* --- FIX: replay uses the visible step, not stale lastEnteredStage --- */
 function replay(){
-  const target = lastEnteredStage;
+  const visibleSteps = $$(".step.in");
+  const target = visibleSteps.length
+    ? +visibleSteps[visibleSteps.length - 1].dataset.stage
+    : lastEnteredStage;
+
   resetSim();
-  fireTo(target);
+  activeStage = -1;
+
+  if (target >= 0){
+    lastEnteredStage = target;
+    fireTo(target);
+  }
 }
 
-/* --- intersection observer for steps --- */
+/* --- intersection observer --- */
 const stepObs = new IntersectionObserver(entries => {
   entries.forEach(e => {
     e.target.classList.toggle("in", e.isIntersecting);
@@ -1950,9 +1888,17 @@ $$(".step").forEach(s => stepObs.observe(s));
 /* --- controls --- */
 $("#replay").addEventListener("click", replay);
 $("#pageArea").addEventListener("click", replay);
+
+/* FIX: toggle change also refreshes the log with a visual flash */
 ["optLogin","optLoc","optConsent"].forEach(id => {
-  $("#"+id).addEventListener("change", () => replay());
+  $("#"+id).addEventListener("change", () => {
+    const log = $("#log");
+    log.classList.add("refresh");
+    replay();
+    setTimeout(() => log.classList.remove("refresh"), 200);
+  });
 });
+
 $("#log").addEventListener("click", e => {
   const b = e.target.closest(".req");
   if (b) showPayload(+b.dataset.i);
@@ -1969,7 +1915,9 @@ function hit(e){
     const d = Math.hypot(n.x - x, n.y - y);
     if (d < bd){ bd = d; best = n; }
   });
-  return bd < 22*devicePixelRatio ? { n:best, px:e.clientX - r.left, py:e.clientY - r.top, w:r.width } : null;
+  return bd < 22*devicePixelRatio
+    ? { n:best, px:e.clientX - r.left, py:e.clientY - r.top, w:r.width }
+    : null;
 }
 cv.addEventListener("mousemove", e => {
   const h = hit(e);
@@ -1980,7 +1928,9 @@ cv.addEventListener("mousemove", e => {
   netTip.innerHTML = `<b>${lab}</b>${r ? `<br>${r.f.length} fields · click to inspect` : ""}`;
   netTip.style.left = h.px + "px";
   netTip.style.top  = h.py + "px";
-  netTip.style.transform = h.px > h.w * 0.7 ? "translate(-100%,-130%)" : "translate(-50%,-130%)";
+  netTip.style.transform = h.px > h.w * 0.7
+    ? "translate(-100%,-130%)"
+    : "translate(-50%,-130%)";
   netTip.hidden = false;
 });
 cv.addEventListener("mouseleave", () => { netTip.hidden = true; });
@@ -2113,10 +2063,7 @@ function renderProfile(){
 let linkTimer = null;
 function showLinkNote(fields, n){
   const el = $("#linkNote");
-  if (!fields){
-    el.classList.remove("on");
-    return;
-  }
+  if (!fields){ el.classList.remove("on"); return; }
   el.innerHTML = `<span>Section 02 is now feeding <b>${n} data points</b> into the pricing model in section 03.</span>` +
                  `<button type="button" class="btn" data-go="s3">See the effect →</button>`;
   el.classList.add("on");
@@ -2207,7 +2154,8 @@ function renderPrice(){
   }
 
   const dl = $("#oDelta");
-  dl.textContent = (d >= 0 ? "+" : "") + d.toFixed(1) + "% versus the average " + (p.invert ? "admitted student" : "customer") +
+  dl.textContent = (d >= 0 ? "+" : "") + d.toFixed(1) + "% versus the average " +
+    (p.invert ? "admitted student" : "customer") +
     (m.n < 20 ? " · with almost no data the model cannot tell you apart" : "");
   dl.className = "delta " + (d > 0 ? "up" : "down");
   $("#hDelta").textContent = (d >= 0 ? "+" : "") + Math.round(d) + "%";
@@ -2231,7 +2179,6 @@ function renderPrice(){
 ["sN","sInc","sUrg","sAlt","sCoord"].forEach(id =>
   $("#"+id).addEventListener("input", renderPrice));
 
-/* chart crosshair */
 const chartTip = $("#chartTip");
 $("#psvg").addEventListener("mousemove", e => {
   const m = priceModel(), p = m.p, svg = $("#psvg"), r = svg.getBoundingClientRect();
@@ -2254,7 +2201,9 @@ $("#psvg").addEventListener("mousemove", e => {
     `At ${fmt(price)}${p.unit}<br>You: ${Math.round(py*100)}% yes<br>Average: ${Math.round(pa*100)}% yes`;
   chartTip.style.left = (e.clientX - r.left) + "px";
   chartTip.style.top  = (e.clientY - r.top) + "px";
-  chartTip.style.transform = (e.clientX - r.left) > r.width*0.7 ? "translate(-100%,-130%)" : "translate(-50%,-130%)";
+  chartTip.style.transform = (e.clientX - r.left) > r.width*0.7
+    ? "translate(-100%,-130%)"
+    : "translate(-50%,-130%)";
   chartTip.hidden = false;
 });
 $("#psvg").addEventListener("mouseleave", () => {
@@ -2267,7 +2216,6 @@ $("#psvg").addEventListener("click", () => {
   renderPrice();
 });
 
-/* presets */
 const PRE = [[0,50,50,70],[180,20,20,90],[220,90,90,15],null];
 $("#presets").addEventListener("click", e => {
   const b = e.target.closest("button");
@@ -2437,7 +2385,10 @@ const navObs = new IntersectionObserver(entries => {
       a.setAttribute("aria-current", String(a.dataset.sec === id)));
   });
 }, { rootMargin: "-40% 0px -55% 0px" });
-["s1","s2","s3","s4"].forEach(id => { const el = document.getElementById(id); if (el) navObs.observe(el); });
+["s1","s2","s3","s4"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) navObs.observe(el);
+});
 
 /* ============================================================
    BOOT
@@ -2446,14 +2397,20 @@ function previewStats(){
   const p = reqPlan();
   let co = 0;
   const fields = new Set();
-  p.forEach(r => { co += 1 + (r.fan || 0); r.f.forEach(f => fields.add(f)); });
+  p.forEach(r => {
+    co += 1 + (r.fan || 0);
+    r.f.forEach(f => fields.add(f));
+  });
   const md = computeModel(Math.min(250, fields.size * 18), 0.5, 0.5, 0.7, false, mode);
   const delta = Math.round((md.bestYou - md.bestPop)/md.bestPop*100);
   return { co, fields: fields.size, delta };
 }
 
 function animateStat(el, to, suffix){
-  if (RM){ el.textContent = (suffix && to >= 0 ? "+" : "") + to + (suffix || ""); return; }
+  if (RM){
+    el.textContent = (suffix && to >= 0 ? "+" : "") + to + (suffix || "");
+    return;
+  }
   const dur = 900, start = performance.now();
   (function step(t){
     const k = Math.min(1, (t - start)/dur);
