@@ -355,6 +355,36 @@ section.block:last-of-type{border-bottom:0}
 .scrolly .sticky .browser .adslot{height:20px;font-size:.55rem;letter-spacing:.1em}
 .scrolly .sticky .browser .page .hint{font-size:.55rem;bottom:4px;right:8px}
 .scrolly .sticky .net{flex:1 1 auto;min-height:420px}
+.scrolly .steps{padding-bottom:28vh}
+.scrolly .sticky .togs{
+  display:flex;flex-wrap:wrap;gap:4px 18px;flex:0 0 auto;
+  padding:6px 0 2px;
+}
+.scrolly .sticky .tog{font-size:.78rem;padding:0;gap:7px}
+.scrolly .sticky .tog input{width:14px;height:14px;margin-top:1px}
+.scrolly .sticky .chipbar{
+  flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:4px;
+}
+.chipbar .lbl{
+  font-family:var(--sans);font-size:.6rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);font-weight:600;margin-right:8px;
+}
+.chipbar .chips{display:flex;flex-wrap:wrap;gap:4px}
+.chipbar .chips span{
+  font-family:var(--sans);font-size:.6rem;line-height:1;
+  letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+  padding:5px 8px;border:1px solid var(--rule);border-radius:999px;
+  color:var(--muted);background:rgba(255,255,255,.92);
+  transition:background .25s,color .25s,border-color .25s;
+}
+.chipbar .chips span.on{color:#fff;background:#1e3a8a;border-color:#1e3a8a}
+.chipbar .chips span.on.id{background:#7f1d1d;border-color:#7f1d1d}
+.net .simhint{
+  position:absolute;left:12px;bottom:10px;
+  font-family:var(--sans);font-size:.66rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);font-weight:600;
+  pointer-events:none;
+}
 .scrolly .sticky .logcard{flex:0 0 auto;padding:8px 12px;gap:6px}
 .scrolly .sticky .log{max-height:110px}
 .scrolly .sticky .payload{max-height:120px;font-size:.68rem}
@@ -1103,7 +1133,12 @@ footer b{color:var(--ink);font-weight:600}
     order:-1;
   }
   .scrolly .sticky .browser{display:none}
-  .scrolly .sticky .net{aspect-ratio:16/9;flex:none;min-height:0}
+  .scrolly .sticky .net{aspect-ratio:1/1;flex:none;min-height:0}
+  .net .hud{gap:10px;padding:6px 8px;left:8px;top:8px}
+  .hud .k{font-size:.55rem}
+  .hud .k b{font-size:.85rem}
+  .net .tline{right:8px;top:8px;font-size:.62rem;padding:4px 7px}
+  .net .simhint{display:none}
   .scrolly .sticky .logcard{max-height:220px}
   .scrolly .sticky .log{max-height:96px}
   .scrolly .sticky .payload{max-height:96px;font-size:.66rem}
@@ -1199,13 +1234,7 @@ footer b{color:var(--ink);font-weight:600}
       </div>
       <button class="btn" id="replay" type="button">Replay</button>
     </div>
-   <div class="togs">
-  <label class="tog"><input type="checkbox" id="optLogin" checked> Signed in to the site (email known)</label>
-  <label class="tog"><input type="checkbox" id="optLoc" checked> Location permission granted</label>
-  <label class="tog"><input type="checkbox" id="optStrict"> Strict consent mode (EU-style) — trackers wait for permission</label>
-  <label class="tog"><input type="checkbox" id="optBlocker"> Ad blocker installed</label>
-</div>
-    <p class="note">Timing and counts are illustrative, not a measurement of any one site. Toggle a setting to see the requests change.</p>
+    <p class="note">Timing and counts are illustrative, not a measurement of any one site. The settings next to the simulation below reload the page with different conditions — watch the graph change.</p>
   </div>
 
   <div class="scrolly">
@@ -1243,13 +1272,13 @@ footer b{color:var(--ink);font-weight:600}
         <h3>Three exchanges fan the request out to bidders</h3>
         <p>Each exchange uses a standard called <b>OpenRTB</b>. Bidders have milliseconds to decide what you are worth.</p>
         <p>One wins and shows an ad. <b>The rest keep the data.</b></p>
-        <div class="carried">+3 requests · +35 bidders</div>
+        <div class="carried">+3 requests · +42 bidders (+54 if signed in)</div>
       </article>
       <article class="step" data-stage="5">
         <div class="stepnum">Step 6 of 7</div>
         <h3>The winning ad loads its own trackers</h3>
         <p>The creative arrives with measurement scripts attached: viewability, verification, attribution. Each one is a separate company.</p>
-        <div class="carried">+1 request · +3 companies</div>
+        <div class="carried">+1 request · +1 company</div>
       </article>
       <article class="step" data-stage="6">
         <div class="stepnum">Step 7 of 7</div>
@@ -1261,6 +1290,12 @@ footer b{color:var(--ink);font-weight:600}
 
     <div class="sticky" id="stickyCol">
       <div class="visual-title">Live simulation</div>
+      <div class="togs">
+        <label class="tog"><input type="checkbox" id="optLogin" checked> Signed in</label>
+        <label class="tog"><input type="checkbox" id="optLoc" checked> Location allowed</label>
+        <label class="tog"><input type="checkbox" id="optStrict"> Strict consent (EU)</label>
+        <label class="tog"><input type="checkbox" id="optBlocker"> Ad blocker</label>
+      </div>
       <div class="browser">
         <div class="bar"><i></i><i></i><i></i><span class="url" id="url"></span></div>
         <div class="page" id="pageArea">
@@ -1280,9 +1315,11 @@ footer b{color:var(--ink);font-weight:600}
           <span class="k">Bidders<b id="kBid">0</b></span>
         </div>
         <div class="tline">t = <b id="tms">0</b> ms</div>
+        <div class="simhint" id="simHint">scroll to load</div>
         <div class="tip" id="netTip" hidden></div>
       </div>
 
+      <div class="chipbar"><span class="lbl">Sent to third parties</span><div class="chips" id="chips"></div></div>
       <div class="logcard">
         <h4>Request log <em>click a row to inspect</em></h4>
         <div class="log" id="log"></div>
@@ -1640,8 +1677,9 @@ const COL = {
 function addNode(label, c, ring, parent){
   const n = { label, c, ring, parent, x:0, y:0, born:performance.now(), fanCount:0 };
   const cx = W/2, cy = H/2;
-  const R1 = Math.min(W, H) * 0.30;
-  const R2 = Math.min(W, H) * 0.46;
+  const small = Math.min(W, H) < 520 * devicePixelRatio;   /* phone-sized canvas */
+  const R1 = Math.min(W, H) * (small ? 0.26 : 0.30);
+  const R2 = Math.min(W, H) * (small ? 0.42 : 0.46);
 
   if (ring === 0){
     n.x = cx; n.y = cy;
@@ -1652,11 +1690,13 @@ function addNode(label, c, ring, parent){
     n.x = cx + Math.cos(a) * R1;
     n.y = cy + Math.sin(a) * R1;
   } else {
-    const siblings = nodes.filter(m => m.ring === 2 && m.parent === parent);
-    const k = siblings.length;
+    /* bidders: one dot each, fanned in an arc behind the exchange */
+    const k = nodes.filter(m => m.ring === 2 && m.parent === parent).length;
+    const total = parent.fanDots || 1;
     const parentAngle = Math.atan2(parent.y - cy, parent.x - cx);
-    const spread = 0.16;
-    const a = parentAngle + (k - 1) * spread;
+    const spread = Math.min(0.46, 0.026 * total);
+    const a = total === 1 ? parentAngle
+            : parentAngle - spread/2 + k * (spread / (total - 1));
     n.x = cx + Math.cos(a) * R2;
     n.y = cy + Math.sin(a) * R2;
   }
@@ -1668,6 +1708,8 @@ function drawNet(now){
   if (!W || !H) return;
   ctx.clearRect(0,0,W,H);
   const dp = devicePixelRatio;
+  /* shrink labels and nodes on small canvases (phones) */
+  const sc = Math.max(0.68, Math.min(1, Math.min(W, H) / (640*dp)));
 
   /* edges — all navy, bidders lighter */
   nodes.forEach(n => {
@@ -1700,16 +1742,20 @@ function drawNet(now){
 
   /* nodes */
   nodes.forEach(n => {
-    if (selReq !== null && n.req === selReq){
+    if (selReq !== null && n.req === selReq && n.ring === 1){
+      ctx.fillStyle = "rgba(20,20,20,.10)";
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 24*sc*dp, 0, 7);
+      ctx.fill();
       ctx.strokeStyle = "#141414";
       ctx.lineWidth = 2*dp;
       ctx.beginPath();
-      ctx.arc(n.x, n.y, (n.ring === 2 ? 9 : 18)*dp, 0, 7);
+      ctx.arc(n.x, n.y, 24*sc*dp, 0, 7);
       ctx.stroke();
     }
 
     const age = RM ? 1 : Math.min(1, (now - n.born)/300);
-    const baseR = n.ring === 0 ? 22 : n.ring === 1 ? 10 : 4;
+    const baseR = (n.ring === 0 ? 24 : n.ring === 1 ? 13 : 2.8) * sc;
     const rr = baseR * dp * (0.55 + 0.45 * age);
 
     ctx.fillStyle = COL[n.c];
@@ -1732,19 +1778,31 @@ function drawNet(now){
     /* ring-1 labels */
     if (n.ring === 1){
       const ang = Math.atan2(n.y - H/2, n.x - W/2);
-      const lx = n.x + Math.cos(ang) * 26*dp;
-      const ly = n.y + Math.sin(ang) * 26*dp;
-      const rightSide = Math.cos(ang) >= 0;
-      ctx.textAlign = rightSide ? "left" : "right";
+      const cos = Math.cos(ang), sin = Math.sin(ang);
+      let lx, ly;
+      if (Math.abs(cos) < 0.35){
+        /* node near top or bottom: center the label above/below it */
+        ctx.textAlign = "center";
+        lx = n.x;
+        ly = n.y + (sin > 0 ? 30 : -24) * sc*dp;
+      } else {
+        /* otherwise: beside the node, level with it */
+        ctx.textAlign = cos >= 0 ? "left" : "right";
+        lx = n.x + (cos >= 0 ? 21 : -21) * sc*dp;
+        ly = n.y + (n.sub ? -3 : 5) * sc*dp;
+      }
 
+      const SHORT = { "Data broker beacon":"Broker beacon", "Fingerprint script":"Fingerprint",
+        "Winning ad + verification":"Winning ad", "Header-bidding wrapper":"Bid wrapper" };
+      const label = (sc < 0.85 && SHORT[n.label]) ? SHORT[n.label] : n.label;
       ctx.fillStyle = "#141414";
-      ctx.font = `600 ${12*dp}px Inter, sans-serif`;
-      ctx.fillText(n.label, lx, ly + 4*dp);
+      ctx.font = `600 ${13*sc*dp}px Inter, sans-serif`;
+      ctx.fillText(label, lx, ly);
 
-      if (n.fanCount){
-        ctx.fillStyle = "#6b6b6b";
-        ctx.font = `500 ${10*dp}px Inter, sans-serif`;
-        ctx.fillText("→ " + n.fanCount + " bidders", lx, ly + 18*dp);
+      if (n.sub){
+        ctx.fillStyle = n.subHot ? "#7f1d1d" : "#6b6b6b";
+        ctx.font = `500 ${11*sc*dp}px Inter, sans-serif`;
+        ctx.fillText(n.sub, lx, ly + 15*sc*dp);
       }
     }
   });
@@ -1773,18 +1831,28 @@ function fire(r, i){
   companies++;
   packets.push({ a:you, b:n, t:performance.now(), d: RM ? 0 : 420, c:r.c });
 
+  const hasGeo   = r.f.includes("geo");
+  const hasEmail = r.f.includes("email");
+
   if (r.fan){
     companies += r.fan;
     bidders   += r.fan;
     n.fanCount = r.fan;
-    for (let k = 0; k < 3; k++){
+    n.fanDots  = Math.min(r.fan, 18);
+    n.sub = "→ " + r.fan + " bidders" + (hasGeo ? " · GPS" : "");
+    n.subHot = hasGeo;
+    for (let k = 0; k < n.fanDots; k++){
       const b = addNode("", r.c, 2, n);
       b.req = i;
-      packets.push({ a:n, b, t:performance.now()+60+k*40, d: RM ? 0 : 420, c:"bid" });
+      packets.push({ a:n, b, t:performance.now()+60+k*18, d: RM ? 0 : 420, c:"bid" });
     }
+  } else if (hasEmail){
+    n.sub = "+ email hash";
+    n.subHot = true;
   }
 
   r.f.forEach(f => fieldSet.add(f));
+  renderChips();
 
   if (r.n.startsWith("Winning")){
     $("#ad1").className = "adslot filled"; $("#ad1").textContent = "Targeted ad";
@@ -1794,6 +1862,7 @@ function fire(r, i){
   $("#kReq").textContent = i + 1 + (r.fan || 0);
   $("#kCo").textContent  = companies;
   $("#kBid").textContent = bidders;
+  $("#simHint").textContent = "click any node or log row to inspect";
   $("#hCompanies").textContent = companies;
   $("#hFields").textContent    = fieldSet.size;
 
@@ -1827,6 +1896,24 @@ function showPayload(i){
     lines + `\n\n<span class="cm">// ${r.note}</span>`;
 }
 
+/* Which fields the toggles control — shown as chips on the canvas */
+const CHIPS = [
+  ["email",  "email hash", "id"],
+  ["geo",    "GPS location", "id"],
+  ["canvas", "fingerprint", "id"],
+  ["ip",     "IP address", ""],
+  ["cid",    "client ID", ""],
+  ["ifa",    "ad ID", ""],
+  ["seg",    "audience segments", ""]
+];
+function renderChips(){
+  const box = $("#chips");
+  if (!box) return;
+  box.innerHTML = CHIPS.map(([k, label, kind]) =>
+    `<span class="${fieldSet.has(k) ? "on " + kind : ""}">${label}</span>`
+  ).join("");
+}
+
 /* --- FIX: resetSim no longer draws an empty canvas mid-reset --- */
 function resetSim(){
   cancelAnimationFrame(raf);
@@ -1853,6 +1940,8 @@ function resetSim(){
   $("#payload").innerHTML = '<span class="cm">// Click a request to see what it carried.</span>';
   $("#url").textContent = MODES[mode].url;
   $("#pageHint").textContent = "scroll to load →";
+  $("#simHint").textContent = "scroll to load";
+  renderChips();
 
   sizeCanvas();
   ctx.clearRect(0, 0, W, H);
@@ -1893,6 +1982,7 @@ function replay(){
   t0 = performance.now();
   playing = true;
   $("#pageHint").textContent = "reloading…";
+  $("#simHint").textContent = "reloading with new settings…";
   raf = requestAnimationFrame(tick);
 }
 /* --- intersection observer --- */
@@ -1912,7 +2002,6 @@ $$(".step").forEach(s => stepObs.observe(s));
 
 /* --- controls --- */
 $("#replay").addEventListener("click", replay);
-$("#pageArea").addEventListener("click", replay);
 
 /* FIX: toggle change also refreshes the log with a visual flash */
 ["optLogin","optLoc","optStrict","optBlocker"].forEach(id => {
@@ -1958,9 +2047,7 @@ cv.addEventListener("mousemove", e => {
 cv.addEventListener("mouseleave", () => { netTip.hidden = true; });
 cv.addEventListener("click", e => {
   const h = hit(e);
-  if (!h){ replay(); return; }
-  if (h.n.req != null) showPayload(h.n.req);
-  else replay();
+  if (h && h.n.req != null) showPayload(h.n.req);
 });
 
 /* ============================================================
